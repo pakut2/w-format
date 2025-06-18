@@ -1,5 +1,7 @@
 package object
 
+import "github.com/pakut2/js-whitespace/pkg/whitespace"
+
 type ObjectType string
 
 const (
@@ -12,43 +14,48 @@ const (
 
 type Object interface {
 	Type() ObjectType
-	Instruction() string
+	Instruction() []whitespace.Instruction
 }
 
 type Program struct {
-	InstructionBody string
+	Instructions []whitespace.Instruction
 }
 
-func (p *Program) Type() ObjectType    { return PROGRAM_OBJ }
-func (p *Program) Instruction() string { return p.InstructionBody }
+func (p *Program) Type() ObjectType                      { return PROGRAM_OBJ }
+func (p *Program) Instruction() []whitespace.Instruction { return p.Instructions }
 
 type String struct {
-	InstructionBody string
-	Chars           []Char
+	Chars []Char
 }
 
-func (s *String) Type() ObjectType    { return STRING_OBJ }
-func (s *String) Instruction() string { return s.InstructionBody }
+func (s *String) Type() ObjectType { return STRING_OBJ }
+func (s *String) Instruction() []whitespace.Instruction {
+	return []whitespace.Instruction{}
+}
 
 type Char struct {
 	HeapAddress byte
 }
 
-func (c *Char) Type() ObjectType    { return CHAR_OBJ }
-func (c *Char) Instruction() string { return "" }
+func (c *Char) Type() ObjectType { return CHAR_OBJ }
+func (c *Char) Instruction() []whitespace.Instruction {
+	return []whitespace.Instruction{}
+}
 
-type BuildIn struct {
+type BuiltIn struct {
 	Function BuiltInFunction
 }
 
-func (b *BuildIn) Type() ObjectType    { return BUILT_IN_OBJ }
-func (b *BuildIn) Instruction() string { return "" }
+func (b *BuiltIn) Type() ObjectType { return BUILT_IN_OBJ }
+func (b *BuiltIn) Instruction() []whitespace.Instruction {
+	return []whitespace.Instruction{}
+}
 
 type BuiltInFunction func(args ...Object) Object
 
-type Void struct {
-	InstructionBody string
-}
+type Void struct{}
 
-func (v *Void) Type() ObjectType    { return VOID_OBJ }
-func (v *Void) Instruction() string { return v.InstructionBody }
+func (v *Void) Type() ObjectType { return VOID_OBJ }
+func (v *Void) Instruction() []whitespace.Instruction {
+	return []whitespace.Instruction{}
+}

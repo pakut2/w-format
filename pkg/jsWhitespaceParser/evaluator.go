@@ -3,22 +3,16 @@ package jsWhitespaceParser
 import (
 	"fmt"
 
+	"github.com/pakut2/js-whitespace/pkg/whitespace"
+
 	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceParser/internal/ast"
 	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceParser/internal/object"
 )
 
-const (
-	TAB       = '\t'
-	LINE_FEED = '\n'
-	SPACE     = ' '
-	//TAB       = 'T'
-	//LINE_FEED = 'L'
-	//SPACE     = 'S'
-)
-
 type Evaluator struct {
+	instructions       []whitespace.Instruction
 	currentHeapAddress byte
-	builtInFunctions   map[string]*object.BuildIn
+	builtInFunctions   map[string]*object.BuiltIn
 }
 
 func NewEvaluator() *Evaluator {
@@ -26,54 +20,42 @@ func NewEvaluator() *Evaluator {
 		currentHeapAddress: 0,
 	}
 
-	e.builtInFunctions = make(map[string]*object.BuildIn)
-	e.registerBuildInFunction("console.log", &object.BuildIn{Function: e.consoleLogBuiltInFunction})
+	e.builtInFunctions = make(map[string]*object.BuiltIn)
+	e.registerBuildInFunction("console.log", &object.BuiltIn{Function: e.consoleLogBuiltInFunction})
 
 	return e
 }
 
-func (e *Evaluator) registerBuildInFunction(functionName string, function *object.BuildIn) {
+func (e *Evaluator) registerBuildInFunction(functionName string, function *object.BuiltIn) {
 	e.builtInFunctions[functionName] = function
 }
 
-func (e *Evaluator) consoleLogBuiltInFunction(args ...object.Object) object.Object {
-	var instruction string
+func (e *Evaluator) addInstruction(instruction whitespace.Instruction) {
+	e.instructions = append(e.instructions, instruction)
+}
 
+func (e *Evaluator) consoleLogBuiltInFunction(args ...object.Object) object.Object {
 	for i, arg := range args {
 		switch arg := arg.(type) {
 		case *object.String:
-			instruction = fmt.Sprintf("%s%s", instruction, arg.InstructionBody)
-
 			for _, char := range arg.Chars {
-				printCharInstruction := fmt.Sprintf("%s%s",
-					e.retrieveFromHeapInstruction(char.HeapAddress),
-					e.printTopStackCharInstruction(),
-				)
-
-				instruction = fmt.Sprintf("%s%s", instruction, printCharInstruction)
+				e.retrieveFromHeapInstruction(char.HeapAddress)
+				e.printTopStackCharInstruction()
 			}
 
 			if i != len(args)-1 {
-				printSpaceInstruction := fmt.Sprintf("%s%s",
-					e.pushNumberLiteralToStackInstruction(' '),
-					e.printTopStackCharInstruction(),
-				)
-
-				instruction = fmt.Sprintf("%s%s", instruction, printSpaceInstruction)
+				e.pushNumberLiteralToStackInstruction(' ')
+				e.printTopStackCharInstruction()
 			}
 		default:
 			panic(fmt.Sprintf("argument %s not supported", arg.Type()))
 		}
 	}
 
-	printNewLineInstruction := fmt.Sprintf("%s%s",
-		e.pushNumberLiteralToStackInstruction('\n'),
-		e.printTopStackCharInstruction(),
-	)
+	e.pushNumberLiteralToStackInstruction('\n')
+	e.printTopStackCharInstruction()
 
-	instruction = fmt.Sprintf("%s%s", instruction, printNewLineInstruction)
-
-	return &object.Void{InstructionBody: instruction}
+	return &object.Void{}
 }
 
 func (e *Evaluator) getCurrentHeapAddressWithIncrement() byte {
@@ -103,14 +85,18 @@ func (e *Evaluator) Eval(node ast.Node) object.Object {
 }
 
 func (e *Evaluator) evalProgram(program *ast.Program) object.Object {
-	var instructions string
-
 	for _, statement := range program.Statements {
-		instructions += e.Eval(statement).Instruction()
+		e.Eval(statement)
 	}
 
+	e.addInstruction(
+		whitespace.Instruction{
+			Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.LINE_FEED, whitespace.LINE_FEED},
+		},
+	)
+
 	return &object.Program{
-		InstructionBody: fmt.Sprintf("%s%c%c%c", instructions, LINE_FEED, LINE_FEED, LINE_FEED),
+		Instructions: e.instructions,
 	}
 }
 
@@ -127,10 +113,9 @@ func (e *Evaluator) evalString(value []byte) object.Object {
 
 	for _, c := range value {
 		heapAddress := e.getCurrentHeapAddressWithIncrement()
-		instruction := e.storeInHeapInstruction(heapAddress, c)
+		e.storeInHeapInstruction(heapAddress, c)
 
 		result.Chars = append(result.Chars, object.Char{HeapAddress: e.currentHeapAddress})
-		result.InstructionBody = fmt.Sprintf("%s%s", result.InstructionBody, instruction)
 	}
 
 	return &result
@@ -150,55 +135,72 @@ func (e *Evaluator) evalExpressions(expressions []ast.Expression) []object.Objec
 
 func (e *Evaluator) applyFunction(function object.Object, args []object.Object) object.Object {
 	switch function := function.(type) {
-	case *object.BuildIn:
+	case *object.BuiltIn:
 		return function.Function(args...)
 	default:
 		panic(fmt.Sprintf("not a function: %s", function.Type()))
 	}
 }
 
-func (e *Evaluator) storeInHeapInstruction(heapAddress byte, value byte) string {
-	instruction := fmt.Sprintf(
-		"%s%s",
-		e.pushNumberLiteralToStackInstruction(heapAddress),
-		e.pushNumberLiteralToStackInstruction(value),
+func (e *Evaluator) storeInHeapInstruction(heapAddress byte, value byte) {
+	e.pushNumberLiteralToStackInstruction(heapAddress)
+	e.pushNumberLiteralToStackInstruction(value)
+	e.addInstruction(
+		whitespace.Instruction{
+			Body: []whitespace.Token{whitespace.TAB, whitespace.TAB, whitespace.SPACE},
+		},
+	)
+}
+
+func (e *Evaluator) retrieveFromHeapInstruction(heapAddress byte) {
+	e.pushNumberLiteralToStackInstruction(heapAddress)
+	e.addInstruction(
+		whitespace.Instruction{
+			Body: []whitespace.Token{
+				whitespace.TAB, whitespace.TAB, whitespace.TAB,
+			},
+		},
+	)
+}
+
+func (e *Evaluator) pushNumberLiteralToStackInstruction(value byte) {
+	e.addInstruction(
+		whitespace.Instruction{
+			Body: append(
+				[]whitespace.Token{whitespace.SPACE, whitespace.SPACE},
+				e.prepareNumberLiteralInstruction(value).Body...,
+			),
+		},
 	)
 
-	return fmt.Sprintf("%s%c%c%c", instruction, TAB, TAB, SPACE)
-}
-
-func (e *Evaluator) retrieveFromHeapInstruction(heapAddress byte) string {
-	instruction := e.pushNumberLiteralToStackInstruction(heapAddress)
-
-	return fmt.Sprintf("%s%c%c%c", instruction, TAB, TAB, TAB)
-}
-
-func (e *Evaluator) pushNumberLiteralToStackInstruction(value byte) string {
-	return fmt.Sprintf("%c%c%s", SPACE, SPACE, e.numberLiteralInstruction(value))
 }
 
 //func (e *Evaluator) popFromStackInstruction() string {
-//	return fmt.Sprintf("%c%c%c", SPACE, LINE_FEED, LINE_FEED)
+//	return fmt.Sprintf("%c%c%c", whitespace.SPACE, whitespace.LINE_FEED, whitespace.LINE_FEED)
 //}
 
-func (e *Evaluator) numberLiteralInstruction(value byte) string {
-	var instruction string
+func (e *Evaluator) prepareNumberLiteralInstruction(value byte) whitespace.Instruction {
+	instruction := whitespace.Instruction{Body: []whitespace.Token{whitespace.SPACE}}
 
 	charBinary := fmt.Sprintf("%s%.8b", instruction, value)
 
 	for _, bit := range charBinary {
 		if bit == '1' {
-			instruction = fmt.Sprintf("%s%c", instruction, TAB)
+			instruction.Body = append(instruction.Body, whitespace.TAB)
 
 			continue
 		}
 
-		instruction = fmt.Sprintf("%s%c", instruction, SPACE)
+		instruction.Body = append(instruction.Body, whitespace.SPACE)
 	}
 
-	return fmt.Sprintf("%c%s%c", SPACE, instruction, LINE_FEED)
+	instruction.Body = append(instruction.Body, whitespace.LINE_FEED)
+
+	return instruction
 }
 
-func (e *Evaluator) printTopStackCharInstruction() string {
-	return fmt.Sprintf("%c%c%c%c", TAB, LINE_FEED, SPACE, SPACE)
+func (e *Evaluator) printTopStackCharInstruction() {
+	e.addInstruction(whitespace.Instruction{
+		Body: []whitespace.Token{whitespace.TAB, whitespace.LINE_FEED, whitespace.SPACE, whitespace.SPACE},
+	})
 }

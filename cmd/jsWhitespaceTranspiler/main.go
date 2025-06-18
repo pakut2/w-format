@@ -24,5 +24,7 @@ func main() {
 	evaluator := jsWhitespaceParser.NewEvaluator()
 	result := evaluator.Eval(ast)
 
-	fmt.Printf("%s", result.Instruction())
+	for _, instruction := range result.Instruction() {
+		fmt.Printf("%s", instruction.String())
+	}
 }
