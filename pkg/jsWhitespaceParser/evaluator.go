@@ -3,10 +3,9 @@ package jsWhitespaceParser
 import (
 	"fmt"
 
-	"github.com/pakut2/js-whitespace/pkg/whitespace"
-
 	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceParser/internal/ast"
 	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceParser/internal/object"
+	"github.com/pakut2/js-whitespace/pkg/whitespace"
 )
 
 type Evaluator struct {
@@ -168,36 +167,15 @@ func (e *Evaluator) pushNumberLiteralToStackInstruction(value byte) {
 		whitespace.Instruction{
 			Body: append(
 				[]whitespace.Token{whitespace.SPACE, whitespace.SPACE},
-				e.prepareNumberLiteralInstruction(value).Body...,
+				whitespace.NumberLiteral(value).Body...,
 			),
 		},
 	)
-
 }
 
 //func (e *Evaluator) popFromStackInstruction() string {
 //	return fmt.Sprintf("%c%c%c", whitespace.SPACE, whitespace.LINE_FEED, whitespace.LINE_FEED)
 //}
-
-func (e *Evaluator) prepareNumberLiteralInstruction(value byte) whitespace.Instruction {
-	instruction := whitespace.Instruction{Body: []whitespace.Token{whitespace.SPACE}}
-
-	charBinary := fmt.Sprintf("%s%.8b", instruction, value)
-
-	for _, bit := range charBinary {
-		if bit == '1' {
-			instruction.Body = append(instruction.Body, whitespace.TAB)
-
-			continue
-		}
-
-		instruction.Body = append(instruction.Body, whitespace.SPACE)
-	}
-
-	instruction.Body = append(instruction.Body, whitespace.LINE_FEED)
-
-	return instruction
-}
 
 func (e *Evaluator) printTopStackCharInstruction() {
 	e.addInstruction(whitespace.Instruction{
