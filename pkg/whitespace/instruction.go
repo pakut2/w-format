@@ -1,6 +1,8 @@
 package whitespace
 
-import "fmt"
+import (
+	"strconv"
+)
 
 type Token byte
 
@@ -45,12 +47,12 @@ func PushToStack() Instruction {
 	}
 }
 
-func NumberLiteral(value byte) Instruction {
+func NumberLiteral(value int64) Instruction {
 	instruction := Instruction{Body: []Token{SPACE}}
 
-	charBinary := fmt.Sprintf("%s%.8b", instruction, value)
+	binaryNumber := strconv.FormatInt(value, 2)
 
-	for _, bit := range charBinary {
+	for _, bit := range binaryNumber {
 		if bit == '1' {
 			instruction.Body = append(instruction.Body, TAB)
 
@@ -65,9 +67,15 @@ func NumberLiteral(value byte) Instruction {
 	return instruction
 }
 
-func PrintTopStack() Instruction {
+func PrintTopStackChar() Instruction {
 	return Instruction{
 		Body: []Token{TAB, LINE_FEED, SPACE, SPACE},
+	}
+}
+
+func PrintTopStackInteger() Instruction {
+	return Instruction{
+		Body: []Token{TAB, LINE_FEED, SPACE, TAB},
 	}
 }
 

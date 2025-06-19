@@ -10,7 +10,7 @@ import (
 
 type Transpiler struct {
 	instructions       []whitespace.Instruction
-	currentHeapAddress byte
+	currentHeapAddress int64
 	builtInFunctions   map[string]*object.BuiltIn
 }
 
@@ -46,6 +46,14 @@ func (t *Transpiler) consoleLogBuiltInFunction(args ...object.Object) object.Obj
 				t.pushNumberLiteralToStackInstruction(' ')
 				t.printTopStackCharInstruction()
 			}
+		case *object.Integer:
+			t.retrieveFromHeapInstruction(arg.HeapAddress)
+			t.printTopStackIntegerInstruction()
+
+			if i != len(args)-1 {
+				t.pushNumberLiteralToStackInstruction(' ')
+				t.printTopStackCharInstruction()
+			}
 		default:
 			panic(fmt.Sprintf("argument %s not supported", arg.Type()))
 		}
@@ -57,7 +65,7 @@ func (t *Transpiler) consoleLogBuiltInFunction(args ...object.Object) object.Obj
 	return &object.Void{}
 }
 
-func (t *Transpiler) getCurrentHeapAddressWithIncrement() byte {
+func (t *Transpiler) getCurrentHeapAddressWithIncrement() int64 {
 	t.currentHeapAddress++
 
 	return t.currentHeapAddress
@@ -71,6 +79,8 @@ func (t *Transpiler) Transpile(node ast.Node) object.Object {
 		return t.Transpile(node.Expression)
 	case *ast.StringLiteral:
 		return t.transpileString([]byte(node.Value))
+	case *ast.IntegerLiteral:
+		return t.transpileInteger(node.Value)
 	case *ast.Identifier:
 		return t.transpileIdentifier(node)
 	case *ast.CallExpression:
@@ -104,16 +114,25 @@ func (t *Transpiler) transpileIdentifier(identifier *ast.Identifier) object.Obje
 }
 
 func (t *Transpiler) transpileString(value []byte) object.Object {
-	var result object.String
+	var stringObject object.String
 
 	for _, c := range value {
 		heapAddress := t.getCurrentHeapAddressWithIncrement()
-		t.storeInHeapInstruction(heapAddress, c)
+		t.storeInHeapInstruction(heapAddress, int64(c))
 
-		result.Chars = append(result.Chars, object.Char{HeapAddress: t.currentHeapAddress})
+		stringObject.Chars = append(stringObject.Chars, object.Char{HeapAddress: t.currentHeapAddress})
 	}
 
-	return &result
+	return &stringObject
+}
+
+func (t *Transpiler) transpileInteger(value int64) object.Object {
+	var integerObject object.Integer
+
+	integerObject.HeapAddress = t.getCurrentHeapAddressWithIncrement()
+	t.storeInHeapInstruction(integerObject.HeapAddress, value)
+
+	return &integerObject
 }
 
 func (t *Transpiler) transpileExpressions(expressions []ast.Expression) []object.Object {
@@ -137,18 +156,18 @@ func (t *Transpiler) applyFunction(function object.Object, args []object.Object)
 	}
 }
 
-func (t *Transpiler) storeInHeapInstruction(heapAddress byte, value byte) {
+func (t *Transpiler) storeInHeapInstruction(heapAddress int64, value int64) {
 	t.pushNumberLiteralToStackInstruction(heapAddress)
 	t.pushNumberLiteralToStackInstruction(value)
 	t.addInstruction(whitespace.StoreInHeap())
 }
 
-func (t *Transpiler) retrieveFromHeapInstruction(heapAddress byte) {
+func (t *Transpiler) retrieveFromHeapInstruction(heapAddress int64) {
 	t.pushNumberLiteralToStackInstruction(heapAddress)
 	t.addInstruction(whitespace.RetrieveFromHeap())
 }
 
-func (t *Transpiler) pushNumberLiteralToStackInstruction(value byte) {
+func (t *Transpiler) pushNumberLiteralToStackInstruction(value int64) {
 	t.addInstruction(
 		whitespace.Instruction{
 			Body: append(
@@ -160,5 +179,9 @@ func (t *Transpiler) pushNumberLiteralToStackInstruction(value byte) {
 }
 
 func (t *Transpiler) printTopStackCharInstruction() {
-	t.addInstruction(whitespace.PrintTopStack())
+	t.addInstruction(whitespace.PrintTopStackChar())
+}
+
+func (t *Transpiler) printTopStackIntegerInstruction() {
+	t.addInstruction(whitespace.PrintTopStackInteger())
 }

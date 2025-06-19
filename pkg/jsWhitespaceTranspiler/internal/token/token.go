@@ -14,6 +14,7 @@ const (
 
 	IDENTIFIER = "IDENTIFIER"
 	STRING     = "STRING"
+	INT        = "INT"
 
 	COMMA             = ","
 	SEMICOLON         = ";"

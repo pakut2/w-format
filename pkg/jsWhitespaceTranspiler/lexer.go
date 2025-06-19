@@ -55,13 +55,19 @@ func (l *Lexer) NextToken() token.Token {
 		currentToken.Literal = l.readString()
 		currentToken.LineNumber = l.currentLineNumber
 	case 0:
-		currentToken.Literal = ""
 		currentToken.Type = token.EOF
+		currentToken.Literal = ""
 		currentToken.LineNumber = l.currentLineNumber
 	default:
-		if isLetter(l.currentChar) {
-			currentToken.Literal = l.readIdentifier()
+		if l.isLetter() {
 			currentToken.Type = token.IDENTIFIER
+			currentToken.Literal = l.readIdentifier()
+			currentToken.LineNumber = l.currentLineNumber
+
+			return currentToken
+		} else if l.isDigit() {
+			currentToken.Type = token.INT
+			currentToken.Literal = l.readNumber()
 			currentToken.LineNumber = l.currentLineNumber
 
 			return currentToken
@@ -85,22 +91,6 @@ func (l *Lexer) skipWhitespace() {
 	}
 }
 
-func (l *Lexer) readIdentifier() string {
-	var identifier string
-
-	for isLetter(l.currentChar) {
-		identifier = fmt.Sprintf("%s%c", identifier, l.currentChar)
-
-		l.readChar()
-	}
-
-	return identifier
-}
-
-func isLetter(char rune) bool {
-	return 'a' <= char && char <= 'z' || 'A' <= char && char <= 'Z' || char == '_' || char == '.'
-}
-
 func (l *Lexer) readString() string {
 	var stringLiteral string
 
@@ -115,4 +105,36 @@ func (l *Lexer) readString() string {
 	}
 
 	return stringLiteral
+}
+
+func (l *Lexer) isLetter() bool {
+	return 'a' <= l.currentChar && l.currentChar <= 'z' || 'A' <= l.currentChar && l.currentChar <= 'Z' || l.currentChar == '_' || l.currentChar == '.'
+}
+
+func (l *Lexer) readIdentifier() string {
+	var identifier string
+
+	for l.isLetter() {
+		identifier = fmt.Sprintf("%s%c", identifier, l.currentChar)
+
+		l.readChar()
+	}
+
+	return identifier
+}
+
+func (l *Lexer) isDigit() bool {
+	return '0' <= l.currentChar && l.currentChar <= '9'
+}
+
+func (l *Lexer) readNumber() string {
+	var numberLiteral string
+
+	for l.isDigit() {
+		numberLiteral = fmt.Sprintf("%s%c", numberLiteral, l.currentChar)
+
+		l.readChar()
+	}
+
+	return numberLiteral
 }

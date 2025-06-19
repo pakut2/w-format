@@ -11,7 +11,7 @@ import (
 )
 
 func TestParser(t *testing.T) {
-	input := "console.log('Hello', 'There!');"
+	input := "console.log('Hello', 'There!', 42);"
 
 	expectedAst :=
 		&ast.ExpressionStatement{
@@ -40,6 +40,14 @@ func TestParser(t *testing.T) {
 							LineNumber: 1,
 						},
 						Value: "There!",
+					},
+					&ast.IntegerLiteral{
+						Token: token.Token{
+							Type:       token.INT,
+							Literal:    "42",
+							LineNumber: 1,
+						},
+						Value: 42,
 					},
 				},
 			},

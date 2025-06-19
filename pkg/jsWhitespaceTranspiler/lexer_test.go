@@ -8,7 +8,7 @@ import (
 )
 
 func TestLexer(t *testing.T) {
-	input := "console.log('Hello', 'There!');"
+	input := "console.log('Hello', 'There!', 42);"
 
 	expectedTokens := []token.Token{
 		{Type: token.IDENTIFIER, Literal: "console.log"},
@@ -16,6 +16,8 @@ func TestLexer(t *testing.T) {
 		{Type: token.STRING, Literal: "Hello"},
 		{Type: token.COMMA, Literal: ","},
 		{Type: token.STRING, Literal: "There!"},
+		{Type: token.COMMA, Literal: ","},
+		{Type: token.INT, Literal: "42"},
 		{Type: token.RIGHT_PARENTHESIS, Literal: ")"},
 		{Type: token.SEMICOLON, Literal: ";"},
 		{Type: token.EOF, Literal: ""},

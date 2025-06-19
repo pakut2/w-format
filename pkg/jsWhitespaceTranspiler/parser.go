@@ -2,6 +2,7 @@ package jsWhitespaceTranspiler
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/pakut2/w-format/pkg/jsWhitespaceTranspiler/internal/ast"
 	"github.com/pakut2/w-format/pkg/jsWhitespaceTranspiler/internal/token"
@@ -32,6 +33,7 @@ func NewParser(l *Lexer) *Parser {
 	p.prefixParseFns = make(map[token.TokenType]prefixParseFn)
 	p.registerPrefix(token.IDENTIFIER, p.parseIdentifier)
 	p.registerPrefix(token.STRING, p.parseStringLiteral)
+	p.registerPrefix(token.INT, p.parseIntegerLiteral)
 
 	p.infixParseFns = make(map[token.TokenType]infixParseFn)
 	p.registerInfix(token.LEFT_PARENTHESIS, p.parseCallExpression)
@@ -143,6 +145,19 @@ func (p *Parser) parseIdentifier() ast.Expression {
 
 func (p *Parser) parseStringLiteral() ast.Expression {
 	return &ast.StringLiteral{Token: p.currentToken, Value: p.currentToken.Literal}
+}
+
+func (p *Parser) parseIntegerLiteral() ast.Expression {
+	integerLiteral := &ast.IntegerLiteral{Token: p.currentToken}
+
+	value, err := strconv.ParseInt(p.currentToken.Literal, 0, 64)
+	if err != nil {
+		panic(fmt.Sprintf("[:%d] cannot parse %q as integer", p.currentToken.LineNumber, p.currentToken.Literal))
+	}
+
+	integerLiteral.Value = value
+
+	return integerLiteral
 }
 
 func (p *Parser) currentTokenIs(expectedCurrentToken token.TokenType) bool {

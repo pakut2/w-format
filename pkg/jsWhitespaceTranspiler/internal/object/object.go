@@ -8,6 +8,7 @@ const (
 	PROGRAM_OBJ  = "PROGRAM"
 	STRING_OBJ   = "STRING"
 	CHAR_OBJ     = "CHAR"
+	INT_OBJ      = "INT"
 	BUILT_IN_OBJ = "BUILT_IN"
 	VOID_OBJ     = "VOID"
 )
@@ -34,11 +35,20 @@ func (s *String) Instructions() []whitespace.Instruction {
 }
 
 type Char struct {
-	HeapAddress byte
+	HeapAddress int64
 }
 
 func (c *Char) Type() ObjectType { return CHAR_OBJ }
 func (c *Char) Instructions() []whitespace.Instruction {
+	return []whitespace.Instruction{}
+}
+
+type Integer struct {
+	HeapAddress int64
+}
+
+func (i *Integer) Type() ObjectType { return INT_OBJ }
+func (i *Integer) Instructions() []whitespace.Instruction {
 	return []whitespace.Instruction{}
 }
 
