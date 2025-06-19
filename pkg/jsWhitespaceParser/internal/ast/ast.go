@@ -19,7 +19,6 @@ type Program struct {
 }
 
 type ExpressionStatement struct {
-	Token      token.Token // the first token of the expression
 	Expression Expression
 }
 
@@ -33,7 +32,6 @@ type Identifier struct {
 func (i *Identifier) expressionNode() {}
 
 type CallExpression struct {
-	Token     token.Token // The '(' token
 	Function  Expression
 	Arguments []Expression
 }

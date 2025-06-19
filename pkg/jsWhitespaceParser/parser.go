@@ -70,7 +70,7 @@ func (p *Parser) ParseProgram() *ast.Program {
 }
 
 func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
-	statement := &ast.ExpressionStatement{Token: p.currentToken}
+	statement := &ast.ExpressionStatement{}
 	statement.Expression = p.parseExpression()
 
 	if p.peekTokenIs(token.SEMICOLON) {
@@ -105,7 +105,7 @@ func (p *Parser) parseExpression() ast.Expression {
 }
 
 func (p *Parser) parseCallExpression(function ast.Expression) ast.Expression {
-	expression := &ast.CallExpression{Token: p.currentToken, Function: function}
+	expression := &ast.CallExpression{Function: function}
 	expression.Arguments = p.parseCallArguments()
 
 	return expression
