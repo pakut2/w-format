@@ -3,8 +3,9 @@ package token
 type TokenType string
 
 type Token struct {
-	Type    TokenType
-	Literal string
+	Type       TokenType
+	Literal    string
+	LineNumber int
 }
 
 const (
@@ -19,3 +20,7 @@ const (
 	LEFT_PARENTHESIS  = "("
 	RIGHT_PARENTHESIS = ")"
 )
+
+func NewToken(tokenType TokenType, char rune, lineNumber int) Token {
+	return Token{Type: tokenType, Literal: string(char), LineNumber: lineNumber}
+}

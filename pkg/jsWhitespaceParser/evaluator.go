@@ -33,21 +33,21 @@ func (e *Evaluator) addInstruction(instruction whitespace.Instruction) {
 	e.instructions = append(e.instructions, instruction)
 }
 
-func (e *Evaluator) consoleLogBuiltInFunction(args ...object.Object) object.Object {
-	for i, arg := range args {
-		switch arg := arg.(type) {
+func (e *Evaluator) consoleLogBuiltInFunction(arguments ...object.Object) object.Object {
+	for i, argument := range arguments {
+		switch argument := argument.(type) {
 		case *object.String:
-			for _, char := range arg.Chars {
+			for _, char := range argument.Chars {
 				e.retrieveFromHeapInstruction(char.HeapAddress)
 				e.printTopStackCharInstruction()
 			}
 
-			if i != len(args)-1 {
+			if i != len(arguments)-1 {
 				e.pushNumberLiteralToStackInstruction(' ')
 				e.printTopStackCharInstruction()
 			}
 		default:
-			panic(fmt.Sprintf("argument %s not supported", arg.Type()))
+			panic(fmt.Sprintf("argument %s not supported", argument.Type()))
 		}
 	}
 
@@ -75,9 +75,9 @@ func (e *Evaluator) Eval(node ast.Node) object.Object {
 		return e.evalIdentifier(node)
 	case *ast.CallExpression:
 		function := e.Eval(node.Function)
-		args := e.evalExpressions(node.Arguments)
+		arguments := e.evalExpressions(node.Arguments)
 
-		return e.applyFunction(function, args)
+		return e.applyFunction(function, arguments)
 	}
 
 	return nil
@@ -88,23 +88,19 @@ func (e *Evaluator) evalProgram(program *ast.Program) object.Object {
 		e.Eval(statement)
 	}
 
-	e.addInstruction(
-		whitespace.Instruction{
-			Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.LINE_FEED, whitespace.LINE_FEED},
-		},
-	)
+	e.addInstruction(whitespace.EndProgram())
 
 	return &object.Program{
 		Instructions: e.instructions,
 	}
 }
 
-func (e *Evaluator) evalIdentifier(node *ast.Identifier) object.Object {
-	if buildInFunction, ok := e.builtInFunctions[node.Value]; ok {
+func (e *Evaluator) evalIdentifier(identifier *ast.Identifier) object.Object {
+	if buildInFunction, ok := e.builtInFunctions[identifier.Value]; ok {
 		return buildInFunction
 	}
 
-	panic(fmt.Sprintf("identifier %s not implemeted", node.Value))
+	panic(fmt.Sprintf("[:%d] identifier %s not implemeted", identifier.Token.LineNumber, identifier.Value))
 }
 
 func (e *Evaluator) evalString(value []byte) object.Object {
@@ -132,53 +128,37 @@ func (e *Evaluator) evalExpressions(expressions []ast.Expression) []object.Objec
 	return result
 }
 
-func (e *Evaluator) applyFunction(function object.Object, args []object.Object) object.Object {
+func (e *Evaluator) applyFunction(function object.Object, arguments []object.Object) object.Object {
 	switch function := function.(type) {
 	case *object.BuiltIn:
-		return function.Function(args...)
+		return function.Function(arguments...)
 	default:
-		panic(fmt.Sprintf("not a function: %s", function.Type()))
+		panic(fmt.Sprintf("%s is not a function", function.Type()))
 	}
 }
 
 func (e *Evaluator) storeInHeapInstruction(heapAddress byte, value byte) {
 	e.pushNumberLiteralToStackInstruction(heapAddress)
 	e.pushNumberLiteralToStackInstruction(value)
-	e.addInstruction(
-		whitespace.Instruction{
-			Body: []whitespace.Token{whitespace.TAB, whitespace.TAB, whitespace.SPACE},
-		},
-	)
+	e.addInstruction(whitespace.StoreInHeap())
 }
 
 func (e *Evaluator) retrieveFromHeapInstruction(heapAddress byte) {
 	e.pushNumberLiteralToStackInstruction(heapAddress)
-	e.addInstruction(
-		whitespace.Instruction{
-			Body: []whitespace.Token{
-				whitespace.TAB, whitespace.TAB, whitespace.TAB,
-			},
-		},
-	)
+	e.addInstruction(whitespace.RetrieveFromHeap())
 }
 
 func (e *Evaluator) pushNumberLiteralToStackInstruction(value byte) {
 	e.addInstruction(
 		whitespace.Instruction{
 			Body: append(
-				[]whitespace.Token{whitespace.SPACE, whitespace.SPACE},
+				whitespace.PushToStack().Body,
 				whitespace.NumberLiteral(value).Body...,
 			),
 		},
 	)
 }
 
-//func (e *Evaluator) popFromStackInstruction() string {
-//	return fmt.Sprintf("%c%c%c", whitespace.SPACE, whitespace.LINE_FEED, whitespace.LINE_FEED)
-//}
-
 func (e *Evaluator) printTopStackCharInstruction() {
-	e.addInstruction(whitespace.Instruction{
-		Body: []whitespace.Token{whitespace.TAB, whitespace.LINE_FEED, whitespace.SPACE, whitespace.SPACE},
-	})
+	e.addInstruction(whitespace.PrintTopStack())
 }

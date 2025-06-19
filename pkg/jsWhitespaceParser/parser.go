@@ -83,7 +83,7 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 func (p *Parser) parseExpression() ast.Expression {
 	prefix := p.prefixParseFns[p.currentToken.Type]
 	if prefix == nil {
-		panic(fmt.Sprintf("no prefix parse function for %s found", p.currentToken.Type))
+		panic(fmt.Sprintf("[:%d] no prefix parse function for %s found", p.currentToken.LineNumber, p.currentToken.Type))
 
 		return nil
 	}
@@ -112,28 +112,29 @@ func (p *Parser) parseCallExpression(function ast.Expression) ast.Expression {
 }
 
 func (p *Parser) parseCallArguments() []ast.Expression {
-	args := []ast.Expression{}
+	var arguments []ast.Expression
 
 	if p.peekTokenIs(token.RIGHT_PARENTHESIS) {
 		p.nextToken()
-		return args
+
+		return arguments
 	}
 
 	p.nextToken()
-	args = append(args, p.parseExpression())
+	arguments = append(arguments, p.parseExpression())
 
 	for p.peekTokenIs(token.COMMA) {
 		p.nextToken()
 		p.nextToken()
 
-		args = append(args, p.parseExpression())
+		arguments = append(arguments, p.parseExpression())
 	}
 
 	if !p.expectPeek(token.RIGHT_PARENTHESIS) {
 		return nil
 	}
 
-	return args
+	return arguments
 }
 
 func (p *Parser) parseIdentifier() ast.Expression {
@@ -144,20 +145,27 @@ func (p *Parser) parseStringLiteral() ast.Expression {
 	return &ast.StringLiteral{Token: p.currentToken, Value: p.currentToken.Literal}
 }
 
-func (p *Parser) currentTokenIs(t token.TokenType) bool {
-	return p.currentToken.Type == t
+func (p *Parser) currentTokenIs(expectedCurrentToken token.TokenType) bool {
+	return p.currentToken.Type == expectedCurrentToken
 }
 
-func (p *Parser) peekTokenIs(t token.TokenType) bool {
-	return p.peekToken.Type == t
+func (p *Parser) peekTokenIs(expectedPeekToken token.TokenType) bool {
+	return p.peekToken.Type == expectedPeekToken
 }
 
-func (p *Parser) expectPeek(t token.TokenType) bool {
-	if p.peekTokenIs(t) {
+func (p *Parser) expectPeek(expectedPeekToken token.TokenType) bool {
+	if p.peekTokenIs(expectedPeekToken) {
 		p.nextToken()
 
 		return true
 	}
 
-	panic(fmt.Sprintf("expected next token to be %s, got %s instead", t, p.peekToken.Type))
+	panic(
+		fmt.Sprintf(
+			"[:%d] expected next token to be %s, got %s instead",
+			p.currentToken.LineNumber,
+			expectedPeekToken,
+			p.peekToken.Type,
+		),
+	)
 }

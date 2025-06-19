@@ -18,23 +18,26 @@ func TestParser(t *testing.T) {
 			Expression: &ast.CallExpression{
 				Function: &ast.Identifier{
 					Token: token.Token{
-						Type:    token.IDENTIFIER,
-						Literal: "console.log",
+						Type:       token.IDENTIFIER,
+						Literal:    "console.log",
+						LineNumber: 1,
 					},
 					Value: "console.log",
 				},
 				Arguments: []ast.Expression{
 					&ast.StringLiteral{
 						Token: token.Token{
-							Type:    token.STRING,
-							Literal: "Hello",
+							Type:       token.STRING,
+							Literal:    "Hello",
+							LineNumber: 1,
 						},
 						Value: "Hello",
 					},
 					&ast.StringLiteral{
 						Token: token.Token{
-							Type:    token.STRING,
-							Literal: "There!",
+							Type:       token.STRING,
+							Literal:    "There!",
+							LineNumber: 1,
 						},
 						Value: "There!",
 					},

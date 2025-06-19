@@ -9,12 +9,13 @@ import (
 )
 
 type Lexer struct {
-	input       bufio.Reader
-	currentChar rune
+	input             bufio.Reader
+	currentChar       rune
+	currentLineNumber int
 }
 
 func NewLexer(input io.Reader) *Lexer {
-	l := &Lexer{input: *bufio.NewReader(input)}
+	l := &Lexer{input: *bufio.NewReader(input), currentLineNumber: 1}
 	l.readChar()
 
 	return l
@@ -28,7 +29,7 @@ func (l *Lexer) readChar() {
 
 			return
 		} else {
-			panic(err)
+			panic(fmt.Sprintf("input processing error: %v", err))
 		}
 	}
 
@@ -36,43 +37,50 @@ func (l *Lexer) readChar() {
 }
 
 func (l *Lexer) NextToken() token.Token {
-	var tok token.Token
+	var currentToken token.Token
 
 	l.skipWhitespace()
 
 	switch l.currentChar {
 	case ';':
-		tok = newToken(token.SEMICOLON, l.currentChar)
+		currentToken = token.NewToken(token.SEMICOLON, l.currentChar, l.currentLineNumber)
 	case ',':
-		tok = newToken(token.COMMA, l.currentChar)
+		currentToken = token.NewToken(token.COMMA, l.currentChar, l.currentLineNumber)
 	case '(':
-		tok = newToken(token.LEFT_PARENTHESIS, l.currentChar)
+		currentToken = token.NewToken(token.LEFT_PARENTHESIS, l.currentChar, l.currentLineNumber)
 	case ')':
-		tok = newToken(token.RIGHT_PARENTHESIS, l.currentChar)
+		currentToken = token.NewToken(token.RIGHT_PARENTHESIS, l.currentChar, l.currentLineNumber)
 	case '"', '\'', '`':
-		tok.Type = token.STRING
-		tok.Literal = l.readString()
+		currentToken.Type = token.STRING
+		currentToken.Literal = l.readString()
+		currentToken.LineNumber = l.currentLineNumber
 	case 0:
-		tok.Literal = ""
-		tok.Type = token.EOF
+		currentToken.Literal = ""
+		currentToken.Type = token.EOF
+		currentToken.LineNumber = l.currentLineNumber
 	default:
 		if isLetter(l.currentChar) {
-			tok.Literal = l.readIdentifier()
-			tok.Type = token.IDENTIFIER
+			currentToken.Literal = l.readIdentifier()
+			currentToken.Type = token.IDENTIFIER
+			currentToken.LineNumber = l.currentLineNumber
 
-			return tok
+			return currentToken
 		} else {
-			tok = newToken(token.ILLEGAL, l.currentChar)
+			currentToken = token.NewToken(token.ILLEGAL, l.currentChar, l.currentLineNumber)
 		}
 	}
 
 	l.readChar()
 
-	return tok
+	return currentToken
 }
 
 func (l *Lexer) skipWhitespace() {
 	for l.currentChar == ' ' || l.currentChar == '\t' || l.currentChar == '\n' || l.currentChar == '\r' {
+		if l.currentChar == '\n' {
+			l.currentLineNumber++
+		}
+
 		l.readChar()
 	}
 }
@@ -87,10 +95,6 @@ func (l *Lexer) readIdentifier() string {
 	}
 
 	return identifier
-}
-
-func newToken(tokenType token.TokenType, char rune) token.Token {
-	return token.Token{Type: tokenType, Literal: string(char)}
 }
 
 func isLetter(char rune) bool {

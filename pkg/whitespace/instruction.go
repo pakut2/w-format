@@ -21,6 +21,30 @@ func (i *Instruction) String() string {
 	return string(i.Body)
 }
 
+func Noop() Instruction {
+	return Instruction{
+		Body: []Token{SPACE, TAB, LINE_FEED, SPACE, LINE_FEED},
+	}
+}
+
+func StoreInHeap() Instruction {
+	return Instruction{
+		Body: []Token{TAB, TAB, SPACE},
+	}
+}
+
+func RetrieveFromHeap() Instruction {
+	return Instruction{
+		Body: []Token{TAB, TAB, TAB},
+	}
+}
+
+func PushToStack() Instruction {
+	return Instruction{
+		Body: []Token{SPACE, SPACE},
+	}
+}
+
 func NumberLiteral(value byte) Instruction {
 	instruction := Instruction{Body: []Token{SPACE}}
 
@@ -41,8 +65,14 @@ func NumberLiteral(value byte) Instruction {
 	return instruction
 }
 
-func Noop() Instruction {
+func PrintTopStack() Instruction {
 	return Instruction{
-		Body: []Token{SPACE, TAB, LINE_FEED, SPACE, LINE_FEED},
+		Body: []Token{TAB, LINE_FEED, SPACE, SPACE},
+	}
+}
+
+func EndProgram() Instruction {
+	return Instruction{
+		Body: []Token{LINE_FEED, LINE_FEED, LINE_FEED},
 	}
 }
