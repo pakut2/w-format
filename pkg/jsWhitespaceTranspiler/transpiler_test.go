@@ -116,9 +116,9 @@ func TestEvaluator(t *testing.T) {
 	}
 
 	transpiler := NewTranspiler()
-	instructions := transpiler.Transpile(mockAst)
+	whitespaceProgram := transpiler.Transpile(mockAst)
 
-	for i, instruction := range instructions.Instruction() {
+	for i, instruction := range whitespaceProgram.Instructions() {
 		currentInstruction := instruction.String()
 		expectedInstruction := expectedInstructions[i].String()
 

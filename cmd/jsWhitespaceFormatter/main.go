@@ -29,7 +29,7 @@ func main() {
 
 	lexer := jsWhitespaceTranspiler.NewLexer(sourceFile)
 	parsedSource := jsWhitespaceTranspiler.NewParser(lexer).ParseProgram()
-	whitespaceInstructions := jsWhitespaceTranspiler.NewTranspiler().Transpile(parsedSource)
+	whitespace := jsWhitespaceTranspiler.NewTranspiler().Transpile(parsedSource)
 
 	var formatTarget io.Reader
 	if args.formatTargetFilePath.Valid {
@@ -57,7 +57,7 @@ func main() {
 		formatOutput = os.Stdout
 	}
 
-	formatter.NewFormatter(formatTarget, whitespaceInstructions.Instruction()).Format(formatOutput)
+	formatter.NewFormatter(formatTarget, whitespace.Instructions()).Format(formatOutput)
 
 	if args.formatOutputFilePath.Valid {
 		fmt.Printf("formatted file saved to %q\n", args.formatOutputFilePath.Value)

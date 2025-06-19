@@ -14,22 +14,22 @@ const (
 
 type Object interface {
 	Type() ObjectType
-	Instruction() []whitespace.Instruction
+	Instructions() []whitespace.Instruction
 }
 
 type Program struct {
-	Instructions []whitespace.Instruction
+	WhitespaceInstructions []whitespace.Instruction
 }
 
-func (p *Program) Type() ObjectType                      { return PROGRAM_OBJ }
-func (p *Program) Instruction() []whitespace.Instruction { return p.Instructions }
+func (p *Program) Type() ObjectType                       { return PROGRAM_OBJ }
+func (p *Program) Instructions() []whitespace.Instruction { return p.WhitespaceInstructions }
 
 type String struct {
 	Chars []Char
 }
 
 func (s *String) Type() ObjectType { return STRING_OBJ }
-func (s *String) Instruction() []whitespace.Instruction {
+func (s *String) Instructions() []whitespace.Instruction {
 	return []whitespace.Instruction{}
 }
 
@@ -38,7 +38,7 @@ type Char struct {
 }
 
 func (c *Char) Type() ObjectType { return CHAR_OBJ }
-func (c *Char) Instruction() []whitespace.Instruction {
+func (c *Char) Instructions() []whitespace.Instruction {
 	return []whitespace.Instruction{}
 }
 
@@ -47,7 +47,7 @@ type BuiltIn struct {
 }
 
 func (b *BuiltIn) Type() ObjectType { return BUILT_IN_OBJ }
-func (b *BuiltIn) Instruction() []whitespace.Instruction {
+func (b *BuiltIn) Instructions() []whitespace.Instruction {
 	return []whitespace.Instruction{}
 }
 
@@ -56,6 +56,6 @@ type BuiltInFunction func(args ...Object) Object
 type Void struct{}
 
 func (v *Void) Type() ObjectType { return VOID_OBJ }
-func (v *Void) Instruction() []whitespace.Instruction {
+func (v *Void) Instructions() []whitespace.Instruction {
 	return []whitespace.Instruction{}
 }

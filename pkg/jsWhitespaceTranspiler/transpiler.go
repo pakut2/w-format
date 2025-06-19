@@ -91,7 +91,7 @@ func (t *Transpiler) transpileProgram(program *ast.Program) object.Object {
 	t.addInstruction(whitespace.EndProgram())
 
 	return &object.Program{
-		Instructions: t.instructions,
+		WhitespaceInstructions: t.instructions,
 	}
 }
 
