@@ -1,4 +1,4 @@
-package jsWhitespaceParser
+package jsWhitespaceTranspiler
 
 import (
 	"encoding/json"
@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceParser/internal/ast"
-	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceParser/internal/token"
+	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceTranspiler/internal/ast"
+	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceTranspiler/internal/token"
 )
 
 func TestParser(t *testing.T) {

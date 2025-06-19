@@ -1,11 +1,11 @@
-package jsWhitespaceParser
+package jsWhitespaceTranspiler
 
 import (
 	"bufio"
 	"fmt"
 	"io"
 
-	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceParser/internal/token"
+	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceTranspiler/internal/token"
 )
 
 type Lexer struct {

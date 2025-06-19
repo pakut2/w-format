@@ -1,10 +1,10 @@
-package jsWhitespaceParser
+package jsWhitespaceTranspiler
 
 import (
 	"fmt"
 
-	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceParser/internal/ast"
-	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceParser/internal/token"
+	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceTranspiler/internal/ast"
+	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceTranspiler/internal/token"
 )
 
 type (
@@ -88,20 +88,20 @@ func (p *Parser) parseExpression() ast.Expression {
 		return nil
 	}
 
-	leftExp := prefix()
+	leftExpression := prefix()
 
 	for !p.peekTokenIs(token.SEMICOLON) {
 		infix := p.infixParseFns[p.peekToken.Type]
 		if infix == nil {
-			return leftExp
+			return leftExpression
 		}
 
 		p.nextToken()
 
-		leftExp = infix(leftExp)
+		leftExpression = infix(leftExpression)
 	}
 
-	return leftExp
+	return leftExpression
 }
 
 func (p *Parser) parseCallExpression(function ast.Expression) ast.Expression {

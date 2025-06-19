@@ -9,7 +9,7 @@ import (
 
 	"github.com/pakut2/js-whitespace/internal/formatter"
 	"github.com/pakut2/js-whitespace/internal/utilities"
-	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceParser"
+	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceTranspiler"
 )
 
 type CommandLineArgs struct {
@@ -27,9 +27,9 @@ func main() {
 	}
 	defer sourceFile.Close()
 
-	lexer := jsWhitespaceParser.NewLexer(sourceFile)
-	parsedSource := jsWhitespaceParser.NewParser(lexer).ParseProgram()
-	whitespaceInstructions := jsWhitespaceParser.NewEvaluator().Eval(parsedSource)
+	lexer := jsWhitespaceTranspiler.NewLexer(sourceFile)
+	parsedSource := jsWhitespaceTranspiler.NewParser(lexer).ParseProgram()
+	whitespaceInstructions := jsWhitespaceTranspiler.NewTranspiler().Transpile(parsedSource)
 
 	var formatTarget io.Reader
 	if args.formatTargetFilePath.Valid {

@@ -1,10 +1,10 @@
-package jsWhitespaceParser
+package jsWhitespaceTranspiler
 
 import (
 	"strings"
 	"testing"
 
-	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceParser/internal/token"
+	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceTranspiler/internal/token"
 )
 
 func TestLexer(t *testing.T) {

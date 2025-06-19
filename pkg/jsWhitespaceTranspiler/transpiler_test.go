@@ -1,10 +1,10 @@
-package jsWhitespaceParser
+package jsWhitespaceTranspiler
 
 import (
 	"testing"
 
-	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceParser/internal/ast"
-	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceParser/internal/token"
+	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceTranspiler/internal/ast"
+	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceTranspiler/internal/token"
 	"github.com/pakut2/js-whitespace/pkg/whitespace"
 )
 
@@ -115,8 +115,8 @@ func TestEvaluator(t *testing.T) {
 		{Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.LINE_FEED, whitespace.LINE_FEED}},
 	}
 
-	evaluator := NewEvaluator()
-	instructions := evaluator.Eval(mockAst)
+	transpiler := NewTranspiler()
+	instructions := transpiler.Transpile(mockAst)
 
 	for i, instruction := range instructions.Instruction() {
 		currentInstruction := instruction.String()
