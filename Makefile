@@ -1,5 +1,5 @@
 run:
-	go run cmd/jsWhitespaceTranspiler/main.go
+	go run cmd/jsWhitespaceFormatter/main.go
 
 test:
 	go test ./...

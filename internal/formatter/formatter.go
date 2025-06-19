@@ -1,4 +1,4 @@
-package jsWhitespaceFormatter
+package formatter
 
 import (
 	"fmt"
