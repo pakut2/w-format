@@ -23,7 +23,7 @@ func main() {
 
 	sourceFile, err := os.Open(args.sourceFilePath)
 	if err != nil {
-		panic(fmt.Sprintf("cannot open file: %s, error: %v", args.sourceFilePath, err))
+		panic(fmt.Sprintf("cannot open file: %q, error: %v", args.sourceFilePath, err))
 	}
 	defer sourceFile.Close()
 
@@ -35,7 +35,7 @@ func main() {
 	if args.formatTargetFilePath.Valid {
 		formatTargetFile, err := os.Open(args.formatTargetFilePath.Value)
 		if err != nil {
-			panic(fmt.Sprintf("cannot open file: %s, error: %v", args.formatTargetFilePath.Value, err))
+			panic(fmt.Sprintf("cannot open file: %q, error: %v", args.formatTargetFilePath.Value, err))
 		}
 		defer formatTargetFile.Close()
 
@@ -48,7 +48,7 @@ func main() {
 	if args.formatOutputFilePath.Valid {
 		formatOutputFile, err := os.Create(args.formatOutputFilePath.Value)
 		if err != nil {
-			panic(fmt.Sprintf("cannot open file: %s, error: %v", args.formatOutputFilePath.Value, err))
+			panic(fmt.Sprintf("cannot open file: %q, error: %v", args.formatOutputFilePath.Value, err))
 		}
 		defer formatOutputFile.Close()
 
@@ -58,6 +58,10 @@ func main() {
 	}
 
 	formatter.NewFormatter(formatTarget, whitespaceInstructions.Instruction()).Format(formatOutput)
+
+	if args.formatOutputFilePath.Valid {
+		fmt.Printf("formatted file saved to %q\n", args.formatOutputFilePath.Value)
+	}
 }
 
 func parseCommandLineArgs() CommandLineArgs {
