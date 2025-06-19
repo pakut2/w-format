@@ -3,9 +3,9 @@ package jsWhitespaceTranspiler
 import (
 	"testing"
 
-	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceTranspiler/internal/ast"
-	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceTranspiler/internal/token"
-	"github.com/pakut2/js-whitespace/pkg/whitespace"
+	"github.com/pakut2/w-format/pkg/jsWhitespaceTranspiler/internal/ast"
+	"github.com/pakut2/w-format/pkg/jsWhitespaceTranspiler/internal/token"
+	"github.com/pakut2/w-format/pkg/whitespace"
 )
 
 func TestEvaluator(t *testing.T) {

@@ -3,8 +3,8 @@ package jsWhitespaceTranspiler
 import (
 	"fmt"
 
-	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceTranspiler/internal/ast"
-	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceTranspiler/internal/token"
+	"github.com/pakut2/w-format/pkg/jsWhitespaceTranspiler/internal/ast"
+	"github.com/pakut2/w-format/pkg/jsWhitespaceTranspiler/internal/token"
 )
 
 type (

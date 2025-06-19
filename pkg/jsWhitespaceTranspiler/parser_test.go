@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceTranspiler/internal/ast"
-	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceTranspiler/internal/token"
+	"github.com/pakut2/w-format/pkg/jsWhitespaceTranspiler/internal/ast"
+	"github.com/pakut2/w-format/pkg/jsWhitespaceTranspiler/internal/token"
 )
 
 func TestParser(t *testing.T) {

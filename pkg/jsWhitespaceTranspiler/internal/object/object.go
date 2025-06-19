@@ -1,6 +1,6 @@
 package object
 
-import "github.com/pakut2/js-whitespace/pkg/whitespace"
+import "github.com/pakut2/w-format/pkg/whitespace"
 
 type ObjectType string
 

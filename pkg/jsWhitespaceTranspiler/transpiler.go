@@ -3,9 +3,9 @@ package jsWhitespaceTranspiler
 import (
 	"fmt"
 
-	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceTranspiler/internal/ast"
-	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceTranspiler/internal/object"
-	"github.com/pakut2/js-whitespace/pkg/whitespace"
+	"github.com/pakut2/w-format/pkg/jsWhitespaceTranspiler/internal/ast"
+	"github.com/pakut2/w-format/pkg/jsWhitespaceTranspiler/internal/object"
+	"github.com/pakut2/w-format/pkg/whitespace"
 )
 
 type Transpiler struct {

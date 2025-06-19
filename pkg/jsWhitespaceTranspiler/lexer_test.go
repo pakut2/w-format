@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceTranspiler/internal/token"
+	"github.com/pakut2/w-format/pkg/jsWhitespaceTranspiler/internal/token"
 )
 
 func TestLexer(t *testing.T) {

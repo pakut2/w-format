@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceTranspiler/internal/token"
+	"github.com/pakut2/w-format/pkg/jsWhitespaceTranspiler/internal/token"
 )
 
 type Lexer struct {

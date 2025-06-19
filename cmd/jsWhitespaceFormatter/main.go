@@ -7,9 +7,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/pakut2/js-whitespace/internal/formatter"
-	"github.com/pakut2/js-whitespace/internal/utilities"
-	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceTranspiler"
+	"github.com/pakut2/w-format/internal/formatter"
+	"github.com/pakut2/w-format/internal/utilities"
+	"github.com/pakut2/w-format/pkg/jsWhitespaceTranspiler"
 )
 
 type CommandLineArgs struct {

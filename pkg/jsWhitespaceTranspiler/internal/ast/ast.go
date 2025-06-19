@@ -1,6 +1,6 @@
 package ast
 
-import "github.com/pakut2/js-whitespace/pkg/jsWhitespaceTranspiler/internal/token"
+import "github.com/pakut2/w-format/pkg/jsWhitespaceTranspiler/internal/token"
 
 type Node interface{}
 

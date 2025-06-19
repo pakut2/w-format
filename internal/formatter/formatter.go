@@ -6,7 +6,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/pakut2/js-whitespace/pkg/whitespace"
+	"github.com/pakut2/w-format/pkg/whitespace"
 )
 
 type Formatter struct {
