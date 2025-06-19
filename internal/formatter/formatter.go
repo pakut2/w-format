@@ -1,24 +1,24 @@
 package formatter
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/pakut2/js-whitespace/pkg/whitespace"
 )
 
 type Formatter struct {
-	input                            string
+	input                            bufio.Reader
 	whitespaceInstructionTokens      []whitespace.Token
 	whitespaceFinalInstructionTokens []whitespace.Token
 	whitespaceTokenIndex             int
-	position                         int
-	readPosition                     int
-	currentChar                      byte
+	currentChar                      rune
 }
 
-func NewFormatter(input string, whitespaceInstructions []whitespace.Instruction) *Formatter {
-	f := &Formatter{input: input, whitespaceTokenIndex: 0}
+func NewFormatter(input io.Reader, whitespaceInstructions []whitespace.Instruction) *Formatter {
+	f := &Formatter{input: *bufio.NewReader(input), whitespaceTokenIndex: 0}
 
 	whitespaceInstructionsLength := len(whitespaceInstructions)
 
@@ -64,14 +64,18 @@ func (f *Formatter) getNextWhitespaceTokenUntil(target whitespace.Token) []white
 }
 
 func (f *Formatter) readChar() {
-	if f.readPosition >= len(f.input) {
-		f.currentChar = 0
-	} else {
-		f.currentChar = f.input[f.readPosition]
+	char, _, err := f.input.ReadRune()
+	if err != nil {
+		if err == io.EOF {
+			f.currentChar = 0
+
+			return
+		} else {
+			panic(err)
+		}
 	}
 
-	f.position = f.readPosition
-	f.readPosition += 1
+	f.currentChar = char
 }
 
 func (f *Formatter) Format() string {
@@ -109,14 +113,17 @@ func (f *Formatter) Format() string {
 
 // TODO don't break on different quote than string start
 func (f *Formatter) readString() string {
-	position := f.position + 1
+	var stringLiteral string
 
 	for {
 		f.readChar()
+
 		if f.currentChar == '"' || f.currentChar == '\'' || f.currentChar == '`' || f.currentChar == 0 {
 			break
 		}
+
+		stringLiteral = fmt.Sprintf("%s%c", stringLiteral, f.currentChar)
 	}
 
-	return f.input[position:f.position]
+	return stringLiteral
 }

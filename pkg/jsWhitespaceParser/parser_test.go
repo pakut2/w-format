@@ -1,7 +1,9 @@
 package jsWhitespaceParser
 
 import (
+	"encoding/json"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceParser/internal/ast"
@@ -40,7 +42,7 @@ func TestParser(t *testing.T) {
 			},
 		}
 
-	lexer := NewLexer(input)
+	lexer := NewLexer(strings.NewReader(input))
 	parser := NewParser(lexer)
 
 	parsedAst := parser.ParseProgram()
@@ -50,6 +52,9 @@ func TestParser(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(parsedAst.Statements[0], expectedAst) {
-		t.Fatalf("invalid ast. expected=%v, got=%v", expectedAst, parsedAst.Statements[0])
+		expectedAstJson, _ := json.MarshalIndent(expectedAst, "", "  ")
+		parsedAstJson, _ := json.MarshalIndent(parsedAst.Statements[0], "", "  ")
+
+		t.Fatalf("invalid ast. expected=%s, got=%s", expectedAstJson, parsedAstJson)
 	}
 }

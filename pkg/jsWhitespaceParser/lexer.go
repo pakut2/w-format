@@ -1,32 +1,38 @@
 package jsWhitespaceParser
 
 import (
+	"bufio"
+	"fmt"
+	"io"
+
 	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceParser/internal/token"
 )
 
 type Lexer struct {
-	input        string
-	position     int
-	readPosition int
-	currentChar  byte
+	input       bufio.Reader
+	currentChar rune
 }
 
-func NewLexer(input string) *Lexer {
-	l := &Lexer{input: input}
+func NewLexer(input io.Reader) *Lexer {
+	l := &Lexer{input: *bufio.NewReader(input)}
 	l.readChar()
 
 	return l
 }
 
 func (l *Lexer) readChar() {
-	if l.readPosition >= len(l.input) {
-		l.currentChar = 0
-	} else {
-		l.currentChar = l.input[l.readPosition]
+	char, _, err := l.input.ReadRune()
+	if err != nil {
+		if err == io.EOF {
+			l.currentChar = 0
+
+			return
+		} else {
+			panic(err)
+		}
 	}
 
-	l.position = l.readPosition
-	l.readPosition += 1
+	l.currentChar = char
 }
 
 func (l *Lexer) NextToken() token.Token {
@@ -72,40 +78,37 @@ func (l *Lexer) skipWhitespace() {
 }
 
 func (l *Lexer) readIdentifier() string {
-	position := l.position
+	var identifier string
 
 	for isLetter(l.currentChar) {
+		identifier = fmt.Sprintf("%s%c", identifier, l.currentChar)
+
 		l.readChar()
 	}
 
-	return l.input[position:l.position]
+	return identifier
 }
 
-func (l *Lexer) peekChar() byte {
-	if l.readPosition >= len(l.input) {
-		return 0
-	} else {
-		return l.input[l.readPosition]
-	}
-}
-
-func newToken(tokenType token.TokenType, char byte) token.Token {
+func newToken(tokenType token.TokenType, char rune) token.Token {
 	return token.Token{Type: tokenType, Literal: string(char)}
 }
 
-func isLetter(char byte) bool {
+func isLetter(char rune) bool {
 	return 'a' <= char && char <= 'z' || 'A' <= char && char <= 'Z' || char == '_' || char == '.'
 }
 
 func (l *Lexer) readString() string {
-	position := l.position + 1
+	var stringLiteral string
 
 	for {
 		l.readChar()
+
 		if l.currentChar == '"' || l.currentChar == '\'' || l.currentChar == '`' || l.currentChar == 0 {
 			break
 		}
+
+		stringLiteral = fmt.Sprintf("%s%c", stringLiteral, l.currentChar)
 	}
 
-	return l.input[position:l.position]
+	return stringLiteral
 }

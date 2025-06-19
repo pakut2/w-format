@@ -1,6 +1,7 @@
 package jsWhitespaceParser
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/pakut2/js-whitespace/pkg/jsWhitespaceParser/internal/token"
@@ -20,7 +21,7 @@ func TestLexer(t *testing.T) {
 		{Type: token.EOF, Literal: ""},
 	}
 
-	lexer := NewLexer(input)
+	lexer := NewLexer(strings.NewReader(input))
 
 	for i, expectedToken := range expectedTokens {
 		parsedToken := lexer.NextToken()
