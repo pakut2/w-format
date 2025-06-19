@@ -30,7 +30,7 @@ func TestLexer(t *testing.T) {
 		}
 
 		if parsedToken.Literal != expectedToken.Literal {
-			t.Fatalf("token literal (#%d) incorrect. expected=%q, got=%q", i+1, expectedToken.Literal, parsedToken.Literal)
+			t.Errorf("token literal (#%d) incorrect. expected=%q, got=%q", i+1, expectedToken.Literal, parsedToken.Literal)
 		}
 	}
 }

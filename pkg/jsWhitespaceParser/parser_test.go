@@ -46,10 +46,10 @@ func TestParser(t *testing.T) {
 	parsedAst := parser.ParseProgram()
 
 	if len(parsedAst.Statements) != 1 {
-		t.Errorf("invalid number of statements. expected=1, got=%d", len(parsedAst.Statements))
+		t.Fatalf("invalid number of statements. expected=1, got=%d", len(parsedAst.Statements))
 	}
 
 	if !reflect.DeepEqual(parsedAst.Statements[0], expectedAst) {
-		t.Errorf("invalid ast. expected=%v, got=%v", expectedAst, parsedAst.Statements[0])
+		t.Fatalf("invalid ast. expected=%v, got=%v", expectedAst, parsedAst.Statements[0])
 	}
 }
