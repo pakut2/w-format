@@ -33,6 +33,71 @@ func NewFormatter(input io.Reader, whitespaceInstructions []whitespace.Instructi
 	return f
 }
 
+func (f *Formatter) readChar() {
+	char, _, err := f.input.ReadRune()
+	if err != nil {
+		if err == io.EOF {
+			f.currentChar = 0
+
+			return
+		} else {
+			panic(err)
+		}
+	}
+
+	f.currentChar = char
+}
+
+func (f *Formatter) Format(target io.Writer) {
+	formattedOutput := bufio.NewWriter(target)
+
+	for f.currentChar != 0 {
+		switch f.currentChar {
+		case ' ', '\t':
+			err := formattedOutput.WriteByte(byte(f.getNextWhitespaceToken()))
+			if err != nil {
+				f.handleOutputError(err)
+			}
+		case '\n':
+			_, err := formattedOutput.WriteString(string(f.getNextWhitespaceTokenUntil(whitespace.LINE_FEED)))
+			if err != nil {
+				f.handleOutputError(err)
+			}
+		case '"', '\'', '`':
+			stringLiteral := f.readString()
+
+			_, err := formattedOutput.WriteString(fmt.Sprintf("%c%s%c", f.currentChar, f.sanitizeString(stringLiteral), f.currentChar))
+			if err != nil {
+				f.handleOutputError(err)
+			}
+		default:
+			_, err := formattedOutput.WriteRune(f.currentChar)
+			if err != nil {
+				f.handleOutputError(err)
+			}
+		}
+
+		f.readChar()
+	}
+
+	if f.whitespaceTokenIndex < len(f.whitespaceInstructionTokens) {
+		_, err := formattedOutput.WriteString(string(f.whitespaceInstructionTokens[f.whitespaceTokenIndex:len(f.whitespaceInstructionTokens)]))
+		if err != nil {
+			f.handleOutputError(err)
+		}
+	}
+
+	_, err := formattedOutput.WriteString(string(f.whitespaceFinalInstructionTokens))
+	if err != nil {
+		f.handleOutputError(err)
+	}
+
+	err = formattedOutput.Flush()
+	if err != nil {
+		f.handleOutputError(err)
+	}
+}
+
 func (f *Formatter) getNextWhitespaceToken() whitespace.Token {
 	if f.whitespaceTokenIndex >= len(f.whitespaceInstructionTokens)-1 {
 		f.whitespaceInstructionTokens = append(f.whitespaceInstructionTokens, whitespace.Noop().Body...)
@@ -63,54 +128,6 @@ func (f *Formatter) getNextWhitespaceTokenUntil(target whitespace.Token) []white
 	return f.whitespaceInstructionTokens[initialWhitespaceTokenIndex:f.whitespaceTokenIndex]
 }
 
-func (f *Formatter) readChar() {
-	char, _, err := f.input.ReadRune()
-	if err != nil {
-		if err == io.EOF {
-			f.currentChar = 0
-
-			return
-		} else {
-			panic(err)
-		}
-	}
-
-	f.currentChar = char
-}
-
-func (f *Formatter) Format() string {
-	var formattedInput string
-
-	for f.currentChar != 0 {
-		switch f.currentChar {
-		case ' ', '\t':
-			formattedInput = fmt.Sprintf("%s%c", formattedInput, f.getNextWhitespaceToken())
-		case '\n':
-			formattedInput = fmt.Sprintf("%s%s", formattedInput, string(f.getNextWhitespaceTokenUntil(whitespace.LINE_FEED)))
-		case '"', '\'', '`':
-			text := f.readString()
-
-			formattedInput = fmt.Sprintf("%s%c%s%c", formattedInput, f.currentChar, strings.ReplaceAll(text, " ", "\u2007"), f.currentChar)
-		default:
-			formattedInput = fmt.Sprintf("%s%c", formattedInput, f.currentChar)
-		}
-
-		f.readChar()
-	}
-
-	if f.whitespaceTokenIndex < len(f.whitespaceInstructionTokens) {
-		formattedInput = fmt.Sprintf(
-			"%s%s",
-			formattedInput,
-			string(f.whitespaceInstructionTokens[f.whitespaceTokenIndex:len(f.whitespaceInstructionTokens)]),
-		)
-	}
-
-	formattedInput = fmt.Sprintf("%s%s", formattedInput, string(f.whitespaceFinalInstructionTokens))
-
-	return formattedInput
-}
-
 // TODO don't break on different quote than string start
 func (f *Formatter) readString() string {
 	var stringLiteral string
@@ -126,4 +143,16 @@ func (f *Formatter) readString() string {
 	}
 
 	return stringLiteral
+}
+
+func (f *Formatter) sanitizeString(value string) string {
+	sanitizedString := strings.ReplaceAll(value, " ", "\u2007")
+	sanitizedString = strings.ReplaceAll(sanitizedString, "\t", strings.Repeat("\u2007", 4))
+	sanitizedString = strings.ReplaceAll(sanitizedString, "\n", "\u000a")
+
+	return sanitizedString
+}
+
+func (f *Formatter) handleOutputError(err error) {
+	panic(fmt.Sprintf("cannot write formatted output, error: %v", err))
 }

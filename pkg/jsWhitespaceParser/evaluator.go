@@ -33,21 +33,21 @@ func (e *Evaluator) addInstruction(instruction whitespace.Instruction) {
 	e.instructions = append(e.instructions, instruction)
 }
 
-func (e *Evaluator) consoleLogBuiltInFunction(arguments ...object.Object) object.Object {
-	for i, argument := range arguments {
-		switch argument := argument.(type) {
+func (e *Evaluator) consoleLogBuiltInFunction(args ...object.Object) object.Object {
+	for i, arg := range args {
+		switch arg := arg.(type) {
 		case *object.String:
-			for _, char := range argument.Chars {
+			for _, char := range arg.Chars {
 				e.retrieveFromHeapInstruction(char.HeapAddress)
 				e.printTopStackCharInstruction()
 			}
 
-			if i != len(arguments)-1 {
+			if i != len(args)-1 {
 				e.pushNumberLiteralToStackInstruction(' ')
 				e.printTopStackCharInstruction()
 			}
 		default:
-			panic(fmt.Sprintf("argument %s not supported", argument.Type()))
+			panic(fmt.Sprintf("argument %s not supported", arg.Type()))
 		}
 	}
 
@@ -75,9 +75,9 @@ func (e *Evaluator) Eval(node ast.Node) object.Object {
 		return e.evalIdentifier(node)
 	case *ast.CallExpression:
 		function := e.Eval(node.Function)
-		arguments := e.evalExpressions(node.Arguments)
+		args := e.evalExpressions(node.Arguments)
 
-		return e.applyFunction(function, arguments)
+		return e.applyFunction(function, args)
 	}
 
 	return nil
@@ -128,10 +128,10 @@ func (e *Evaluator) evalExpressions(expressions []ast.Expression) []object.Objec
 	return result
 }
 
-func (e *Evaluator) applyFunction(function object.Object, arguments []object.Object) object.Object {
+func (e *Evaluator) applyFunction(function object.Object, args []object.Object) object.Object {
 	switch function := function.(type) {
 	case *object.BuiltIn:
-		return function.Function(arguments...)
+		return function.Function(args...)
 	default:
 		panic(fmt.Sprintf("%s is not a function", function.Type()))
 	}

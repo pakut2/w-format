@@ -112,29 +112,29 @@ func (p *Parser) parseCallExpression(function ast.Expression) ast.Expression {
 }
 
 func (p *Parser) parseCallArguments() []ast.Expression {
-	var arguments []ast.Expression
+	var args []ast.Expression
 
 	if p.peekTokenIs(token.RIGHT_PARENTHESIS) {
 		p.nextToken()
 
-		return arguments
+		return args
 	}
 
 	p.nextToken()
-	arguments = append(arguments, p.parseExpression())
+	args = append(args, p.parseExpression())
 
 	for p.peekTokenIs(token.COMMA) {
 		p.nextToken()
 		p.nextToken()
 
-		arguments = append(arguments, p.parseExpression())
+		args = append(args, p.parseExpression())
 	}
 
 	if !p.expectPeek(token.RIGHT_PARENTHESIS) {
 		return nil
 	}
 
-	return arguments
+	return args
 }
 
 func (p *Parser) parseIdentifier() ast.Expression {

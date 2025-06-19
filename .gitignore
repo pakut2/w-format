@@ -20,3 +20,7 @@ go.work
 tmp
 .idea
 .DS_Store
+
+examples/*
+!examples/source.js
+!examples/formatTarget.ts
