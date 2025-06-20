@@ -148,7 +148,7 @@ func (f *Formatter) readString() string {
 func (f *Formatter) sanitizeString(value string) string {
 	sanitizedString := strings.ReplaceAll(value, " ", "\u2007")
 	sanitizedString = strings.ReplaceAll(sanitizedString, "\t", strings.Repeat("\u2007", 4))
-	sanitizedString = strings.ReplaceAll(sanitizedString, "\n", "\u000a")
+	sanitizedString = strings.ReplaceAll(sanitizedString, "\n", "\u2028")
 
 	return sanitizedString
 }

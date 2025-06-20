@@ -11,12 +11,14 @@ import (
 type Transpiler struct {
 	instructions       []whitespace.Instruction
 	currentHeapAddress int64
+	environment        *object.Environment
 	builtInFunctions   map[string]*object.BuiltIn
 }
 
 func NewTranspiler() *Transpiler {
 	t := &Transpiler{
 		currentHeapAddress: 0,
+		environment:        object.NewEnvironment(),
 	}
 
 	t.builtInFunctions = make(map[string]*object.BuiltIn)
@@ -75,6 +77,11 @@ func (t *Transpiler) Transpile(node ast.Node) object.Object {
 	switch node := node.(type) {
 	case *ast.Program:
 		return t.transpileProgram(node)
+	case *ast.LetStatement:
+		value := t.Transpile(node.Value)
+		t.environment.Set(node.Name.Value, value)
+
+		return &object.Void{}
 	case *ast.ExpressionStatement:
 		return t.Transpile(node.Expression)
 	case *ast.StringLiteral:
@@ -106,6 +113,10 @@ func (t *Transpiler) transpileProgram(program *ast.Program) object.Object {
 }
 
 func (t *Transpiler) transpileIdentifier(identifier *ast.Identifier) object.Object {
+	if val, ok := t.environment.Get(identifier.Value); ok {
+		return val
+	}
+
 	if buildInFunction, ok := t.builtInFunctions[identifier.Value]; ok {
 		return buildInFunction
 	}

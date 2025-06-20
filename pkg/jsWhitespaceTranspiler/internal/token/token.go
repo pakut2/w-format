@@ -16,12 +16,32 @@ const (
 	STRING     = "STRING"
 	INT        = "INT"
 
+	ASSIGN = "="
+
 	COMMA             = ","
 	SEMICOLON         = ";"
 	LEFT_PARENTHESIS  = "("
 	RIGHT_PARENTHESIS = ")"
+
+	LET = "LET"
 )
 
-func NewToken(tokenType TokenType, char rune, lineNumber int) Token {
+var keywords = map[string]TokenType{
+	"let": LET,
+}
+
+func LookupIdentifier(identifier string) TokenType {
+	if tokenType, ok := keywords[identifier]; ok {
+		return tokenType
+	}
+
+	return IDENTIFIER
+}
+
+func NewTokenFromChar(tokenType TokenType, char rune, lineNumber int) Token {
 	return Token{Type: tokenType, Literal: string(char), LineNumber: lineNumber}
+}
+
+func NewTokenFromString(tokenType TokenType, literal string, lineNumber int) Token {
+	return Token{Type: tokenType, Literal: literal, LineNumber: lineNumber}
 }

@@ -18,6 +18,14 @@ type Program struct {
 	Statements []Statement
 }
 
+type LetStatement struct {
+	Token token.Token
+	Name  *Identifier
+	Value Expression
+}
+
+func (ls *LetStatement) statementNode() {}
+
 type ExpressionStatement struct {
 	Expression Expression
 }

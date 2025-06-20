@@ -43,36 +43,30 @@ func (l *Lexer) NextToken() token.Token {
 
 	switch l.currentChar {
 	case ';':
-		currentToken = token.NewToken(token.SEMICOLON, l.currentChar, l.currentLineNumber)
+		currentToken = token.NewTokenFromChar(token.SEMICOLON, l.currentChar, l.currentLineNumber)
 	case ',':
-		currentToken = token.NewToken(token.COMMA, l.currentChar, l.currentLineNumber)
+		currentToken = token.NewTokenFromChar(token.COMMA, l.currentChar, l.currentLineNumber)
 	case '(':
-		currentToken = token.NewToken(token.LEFT_PARENTHESIS, l.currentChar, l.currentLineNumber)
+		currentToken = token.NewTokenFromChar(token.LEFT_PARENTHESIS, l.currentChar, l.currentLineNumber)
 	case ')':
-		currentToken = token.NewToken(token.RIGHT_PARENTHESIS, l.currentChar, l.currentLineNumber)
+		currentToken = token.NewTokenFromChar(token.RIGHT_PARENTHESIS, l.currentChar, l.currentLineNumber)
 	case '"', '\'', '`':
-		currentToken.Type = token.STRING
-		currentToken.Literal = l.readString()
-		currentToken.LineNumber = l.currentLineNumber
+		currentToken = token.NewTokenFromString(token.STRING, l.readString(), l.currentLineNumber)
+	case '=':
+		currentToken = token.NewTokenFromChar(token.ASSIGN, l.currentChar, l.currentLineNumber)
 	case 0:
-		currentToken.Type = token.EOF
-		currentToken.Literal = ""
-		currentToken.LineNumber = l.currentLineNumber
+		currentToken = token.NewTokenFromString(token.EOF, "", l.currentLineNumber)
 	default:
 		if l.isLetter() {
-			currentToken.Type = token.IDENTIFIER
 			currentToken.Literal = l.readIdentifier()
+			currentToken.Type = token.LookupIdentifier(currentToken.Literal)
 			currentToken.LineNumber = l.currentLineNumber
 
 			return currentToken
 		} else if l.isDigit() {
-			currentToken.Type = token.INT
-			currentToken.Literal = l.readNumber()
-			currentToken.LineNumber = l.currentLineNumber
-
-			return currentToken
+			return token.NewTokenFromString(token.INT, l.readNumber(), l.currentLineNumber)
 		} else {
-			currentToken = token.NewToken(token.ILLEGAL, l.currentChar, l.currentLineNumber)
+			currentToken = token.NewTokenFromChar(token.ILLEGAL, l.currentChar, l.currentLineNumber)
 		}
 	}
 
@@ -114,7 +108,7 @@ func (l *Lexer) isLetter() bool {
 func (l *Lexer) readIdentifier() string {
 	var identifier string
 
-	for l.isLetter() {
+	for l.isLetter() || l.isDigit() {
 		identifier = fmt.Sprintf("%s%c", identifier, l.currentChar)
 
 		l.readChar()
