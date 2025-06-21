@@ -92,16 +92,6 @@ func (l *Lexer) NextToken() token.Token {
 	l.skipWhitespace()
 
 	switch l.currentChar {
-	case ';':
-		currentToken = token.NewTokenFromChar(token.SEMICOLON, l.currentChar, l.currentLineNumber)
-	case ',':
-		currentToken = token.NewTokenFromChar(token.COMMA, l.currentChar, l.currentLineNumber)
-	case '(':
-		currentToken = token.NewTokenFromChar(token.LEFT_PARENTHESIS, l.currentChar, l.currentLineNumber)
-	case ')':
-		currentToken = token.NewTokenFromChar(token.RIGHT_PARENTHESIS, l.currentChar, l.currentLineNumber)
-	case '"', '\'', '`':
-		currentToken = token.NewTokenFromString(token.STRING, l.readString(), l.currentLineNumber)
 	case '+':
 		currentToken = token.NewTokenFromChar(token.PLUS, l.currentChar, l.currentLineNumber)
 	case '-':
@@ -112,6 +102,20 @@ func (l *Lexer) NextToken() token.Token {
 		currentToken = token.NewTokenFromChar(token.SLASH, l.currentChar, l.currentLineNumber)
 	case '%':
 		currentToken = token.NewTokenFromChar(token.PERCENT, l.currentChar, l.currentLineNumber)
+	case ';':
+		currentToken = token.NewTokenFromChar(token.SEMICOLON, l.currentChar, l.currentLineNumber)
+	case ',':
+		currentToken = token.NewTokenFromChar(token.COMMA, l.currentChar, l.currentLineNumber)
+	case '(':
+		currentToken = token.NewTokenFromChar(token.LEFT_PARENTHESIS, l.currentChar, l.currentLineNumber)
+	case ')':
+		currentToken = token.NewTokenFromChar(token.RIGHT_PARENTHESIS, l.currentChar, l.currentLineNumber)
+	case '{':
+		currentToken = token.NewTokenFromChar(token.LEFT_BRACE, l.currentChar, l.currentLineNumber)
+	case '}':
+		currentToken = token.NewTokenFromChar(token.RIGHT_BRACE, l.currentChar, l.currentLineNumber)
+	case '"', '\'', '`':
+		currentToken = token.NewTokenFromString(token.STRING, l.readString(), l.currentLineNumber)
 	case '=':
 		nextChars, err := l.peekTwoChars()
 		if err == nil && nextChars == "==" {

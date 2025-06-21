@@ -18,6 +18,12 @@ console.log(text, number1, number2);
 
 let expression = (number1 + 2) / 2 > 1000;
 expression === true;
+
+if (false) {
+  let expression = 1;
+} else {
+  let expression = 2;
+}
 `
 
 	expectedInstructions := []whitespace.Instruction{
@@ -178,6 +184,21 @@ expression === true;
 		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.LINE_FEED}},
 		{Body: []whitespace.Token{whitespace.SPACE, whitespace.LINE_FEED, whitespace.TAB}},
 		{Body: []whitespace.Token{whitespace.TAB, whitespace.TAB, whitespace.SPACE}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.TAB, whitespace.TAB, whitespace.SPACE}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.TAB, whitespace.TAB, whitespace.TAB}},
+		{Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.TAB, whitespace.TAB, whitespace.SPACE}},
+		{Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.SPACE, whitespace.LINE_FEED, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.TAB, whitespace.TAB, whitespace.SPACE}},
+		{Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.SPACE, whitespace.LINE_FEED}},
 		{Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.LINE_FEED, whitespace.LINE_FEED}},
 	}
 

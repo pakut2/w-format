@@ -93,6 +93,8 @@ func (t *Transpiler) Transpile(node ast.Node) object.Object {
 		return &object.Void{}
 	case *ast.ExpressionStatement:
 		return t.Transpile(node.Expression)
+	case *ast.BlockStatement:
+		return t.transpileBlockStatement(node)
 	case *ast.StringLiteral:
 		return t.transpileString([]byte(node.Value))
 	case *ast.IntegerLiteral:
@@ -113,6 +115,8 @@ func (t *Transpiler) Transpile(node ast.Node) object.Object {
 		rightExpression := t.Transpile(node.Right)
 
 		return t.transpileInfixExpression(node.Operator, leftExpression, rightExpression)
+	case *ast.IfExpression:
+		return t.transpileIfExpression(node)
 	}
 
 	return nil
@@ -130,6 +134,14 @@ func (t *Transpiler) transpileProgram(program *ast.Program) object.Object {
 	}
 }
 
+func (t *Transpiler) transpileBlockStatement(block *ast.BlockStatement) object.Object {
+	for _, statement := range block.Statements {
+		t.Transpile(statement)
+	}
+
+	return &object.Void{}
+}
+
 func (t *Transpiler) transpileIdentifier(identifier *ast.Identifier) object.Object {
 	if val, ok := t.environment.Get(identifier.Value); ok {
 		return val
@@ -139,7 +151,7 @@ func (t *Transpiler) transpileIdentifier(identifier *ast.Identifier) object.Obje
 		return buildInFunction
 	}
 
-	panic(fmt.Sprintf("[:%d] identifier %s not implemeted", identifier.Token.LineNumber, identifier.Value))
+	panic(fmt.Sprintf("[:%d] identifier %s is not defined", identifier.Token.LineNumber, identifier.Value))
 }
 
 func (t *Transpiler) transpileString(value []byte) object.Object {
@@ -273,43 +285,32 @@ func (t *Transpiler) transpileIntegerInfixExpression(operator string, leftExpres
 	return &object.Integer{HeapAddress: resultHeapAddress}
 }
 
-func (t *Transpiler) integerBooleanInstruction(operator string, leftHeapAddress, rightHeapAddress int64) {
-	matchLabel := t.getEmptyLabelId()
+func (t *Transpiler) transpileIfExpression(ifExpression *ast.IfExpression) object.Object {
+	alternativeLabel := t.getEmptyLabelId()
 	endIfLabel := t.getEmptyLabelId()
 
-	if operator == ast.EQUALS || operator == ast.NOT_EQUALS || operator == ast.GREATER_THAN || operator == ast.LESS_THAN_OR_EQUAL {
-		t.subtractionInstruction(leftHeapAddress, rightHeapAddress)
-		t.addInstruction(whitespace.JumpToLabelIfZero(matchLabel))
+	conditionResult := t.Transpile(ifExpression.Condition)
+
+	conditionResultLiteral, ok := conditionResult.(*object.Integer)
+	if !ok {
+		panic("invalid if condition expression")
 	}
 
-	if operator == ast.LESS_THAN || operator == ast.GREATER_THAN || operator == ast.LESS_THAN_OR_EQUAL || operator == ast.GREATER_THAN_OR_EQUAL {
-		t.subtractionInstruction(leftHeapAddress, rightHeapAddress)
-		t.addInstruction(whitespace.JumpToLabelIfNegative(matchLabel))
-	}
+	t.retrieveFromHeapInstruction(conditionResultLiteral.HeapAddress)
+	t.addInstruction(whitespace.JumpToLabelIfZero(alternativeLabel))
 
-	switch operator {
-	case ast.EQUALS, ast.LESS_THAN, ast.LESS_THAN_OR_EQUAL:
-		t.pushNumberLiteralToStackInstruction(whitespace.FALSE)
-	case ast.NOT_EQUALS, ast.GREATER_THAN, ast.GREATER_THAN_OR_EQUAL:
-		t.pushNumberLiteralToStackInstruction(whitespace.TRUE)
-	default:
-		panic(fmt.Sprintf("unknown operator %q", operator))
-	}
-
+	t.Transpile(ifExpression.Consequence)
 	t.addInstruction(whitespace.JumpToLabel(endIfLabel))
 
-	t.addInstruction(whitespace.Label(matchLabel))
+	t.addInstruction(whitespace.Label(alternativeLabel))
 
-	switch operator {
-	case ast.EQUALS, ast.LESS_THAN, ast.LESS_THAN_OR_EQUAL:
-		t.pushNumberLiteralToStackInstruction(whitespace.TRUE)
-	case ast.NOT_EQUALS, ast.GREATER_THAN, ast.GREATER_THAN_OR_EQUAL:
-		t.pushNumberLiteralToStackInstruction(whitespace.FALSE)
-	default:
-		panic(fmt.Sprintf("unknown operator %q", operator))
+	if ifExpression.Alternative != nil {
+		t.Transpile(ifExpression.Alternative)
 	}
 
 	t.addInstruction(whitespace.Label(endIfLabel))
+
+	return &object.Void{}
 }
 
 func (t *Transpiler) storeTopStackValueInHeapInstruction(heapAddress int64) {
@@ -389,4 +390,43 @@ func (t *Transpiler) divisionInstruction(heapAddress1 int64, heapAddress2 int64)
 func (t *Transpiler) moduloInstruction(heapAddress1 int64, heapAddress2 int64) {
 	t.retrieveMultipleFromHeapInstruction(heapAddress1, heapAddress2)
 	t.addInstruction(whitespace.Mod())
+}
+
+func (t *Transpiler) integerBooleanInstruction(operator string, leftHeapAddress, rightHeapAddress int64) {
+	consequenceLabel := t.getEmptyLabelId()
+	endIfLabel := t.getEmptyLabelId()
+
+	if operator == ast.EQUALS || operator == ast.NOT_EQUALS || operator == ast.GREATER_THAN || operator == ast.LESS_THAN_OR_EQUAL {
+		t.subtractionInstruction(leftHeapAddress, rightHeapAddress)
+		t.addInstruction(whitespace.JumpToLabelIfZero(consequenceLabel))
+	}
+
+	if operator == ast.LESS_THAN || operator == ast.GREATER_THAN || operator == ast.LESS_THAN_OR_EQUAL || operator == ast.GREATER_THAN_OR_EQUAL {
+		t.subtractionInstruction(leftHeapAddress, rightHeapAddress)
+		t.addInstruction(whitespace.JumpToLabelIfNegative(consequenceLabel))
+	}
+
+	switch operator {
+	case ast.EQUALS, ast.LESS_THAN, ast.LESS_THAN_OR_EQUAL:
+		t.pushNumberLiteralToStackInstruction(whitespace.FALSE)
+	case ast.NOT_EQUALS, ast.GREATER_THAN, ast.GREATER_THAN_OR_EQUAL:
+		t.pushNumberLiteralToStackInstruction(whitespace.TRUE)
+	default:
+		panic(fmt.Sprintf("unknown operator %q", operator))
+	}
+
+	t.addInstruction(whitespace.JumpToLabel(endIfLabel))
+
+	t.addInstruction(whitespace.Label(consequenceLabel))
+
+	switch operator {
+	case ast.EQUALS, ast.LESS_THAN, ast.LESS_THAN_OR_EQUAL:
+		t.pushNumberLiteralToStackInstruction(whitespace.TRUE)
+	case ast.NOT_EQUALS, ast.GREATER_THAN, ast.GREATER_THAN_OR_EQUAL:
+		t.pushNumberLiteralToStackInstruction(whitespace.FALSE)
+	default:
+		panic(fmt.Sprintf("unknown operator %q", operator))
+	}
+
+	t.addInstruction(whitespace.Label(endIfLabel))
 }

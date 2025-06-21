@@ -34,16 +34,22 @@ const (
 	SEMICOLON         = ";"
 	LEFT_PARENTHESIS  = "("
 	RIGHT_PARENTHESIS = ")"
+	LEFT_BRACE        = "{"
+	RIGHT_BRACE       = "}"
 
 	LET   = "LET"
 	TRUE  = "TRUE"
 	FALSE = "FALSE"
+	IF    = "IF"
+	ELSE  = "ELSE"
 )
 
 var keywords = map[string]TokenType{
 	"let":   LET,
 	"true":  TRUE,
 	"false": FALSE,
+	"if":    IF,
+	"else":  ELSE,
 }
 
 func LookupIdentifier(identifier string) TokenType {

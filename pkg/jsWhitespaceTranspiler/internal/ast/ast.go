@@ -78,6 +78,22 @@ type CallExpression struct {
 
 func (ce *CallExpression) expressionNode() {}
 
+type IfExpression struct {
+	Token       token.Token
+	Condition   Expression
+	Consequence *BlockStatement
+	Alternative *BlockStatement
+}
+
+func (i *IfExpression) expressionNode() {}
+
+type BlockStatement struct {
+	Token      token.Token
+	Statements []Statement
+}
+
+func (b *BlockStatement) statementNode() {}
+
 type StringLiteral struct {
 	Token token.Token
 	Value string

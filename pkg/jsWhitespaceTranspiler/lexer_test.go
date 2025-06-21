@@ -18,6 +18,12 @@ console.log(text, number1, number2);
 
 let expression = (number1 + 2) / 2 > 1000;
 expression === true;
+
+if (false) {
+  let expression = 1;
+} else {
+  let expression = 2;
+}
 `
 
 	expectedTokens := []token.Token{
@@ -72,6 +78,26 @@ expression === true;
 		{Type: token.EQUALS, Literal: "==="},
 		{Type: token.TRUE, Literal: "true"},
 		{Type: token.SEMICOLON, Literal: ";"},
+
+		{Type: token.IF, Literal: "if"},
+		{Type: token.LEFT_PARENTHESIS, Literal: "("},
+		{Type: token.FALSE, Literal: "false"},
+		{Type: token.RIGHT_PARENTHESIS, Literal: ")"},
+		{Type: token.LEFT_BRACE, Literal: "{"},
+		{Type: token.LET, Literal: "let"},
+		{Type: token.IDENTIFIER, Literal: "expression"},
+		{Type: token.ASSIGN, Literal: "="},
+		{Type: token.INT, Literal: "1"},
+		{Type: token.SEMICOLON, Literal: ";"},
+		{Type: token.RIGHT_BRACE, Literal: "}"},
+		{Type: token.ELSE, Literal: "else"},
+		{Type: token.LEFT_BRACE, Literal: "{"},
+		{Type: token.LET, Literal: "let"},
+		{Type: token.IDENTIFIER, Literal: "expression"},
+		{Type: token.ASSIGN, Literal: "="},
+		{Type: token.INT, Literal: "2"},
+		{Type: token.SEMICOLON, Literal: ";"},
+		{Type: token.RIGHT_BRACE, Literal: "}"},
 
 		{Type: token.EOF, Literal: ""},
 	}

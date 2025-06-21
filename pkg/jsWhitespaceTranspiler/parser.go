@@ -65,6 +65,7 @@ func NewParser(l *Lexer) *Parser {
 	p.registerPrefixFunc(token.BANG, p.parsePrefixExpression)
 	p.registerPrefixFunc(token.TRUE, p.parseBoolean)
 	p.registerPrefixFunc(token.FALSE, p.parseBoolean)
+	p.registerPrefixFunc(token.IF, p.parseIfExpression)
 
 	p.infixParseFuncs = make(map[token.TokenType]infixParseFunc)
 	p.registerInfixFunc(token.LEFT_PARENTHESIS, p.parseCallExpression)
@@ -289,6 +290,56 @@ func (p *Parser) parseBoolean() ast.Expression {
 	}
 
 	return &ast.IntegerLiteral{Token: p.currentToken, Value: integerBooleanValue}
+}
+
+func (p *Parser) parseIfExpression() ast.Expression {
+	expression := &ast.IfExpression{Token: p.currentToken}
+	if !p.expectPeek(token.LEFT_PARENTHESIS) {
+		return nil
+	}
+
+	p.nextToken()
+	expression.Condition = p.parseExpression(LOWEST)
+
+	if !p.expectPeek(token.RIGHT_PARENTHESIS) {
+		return nil
+	}
+
+	if !p.expectPeek(token.LEFT_BRACE) {
+		return nil
+	}
+
+	expression.Consequence = p.parseBlockStatement()
+
+	if p.peekTokenIs(token.ELSE) {
+		p.nextToken()
+
+		if !p.expectPeek(token.LEFT_BRACE) {
+			return nil
+		}
+
+		expression.Alternative = p.parseBlockStatement()
+	}
+
+	return expression
+}
+
+func (p *Parser) parseBlockStatement() *ast.BlockStatement {
+	block := &ast.BlockStatement{Token: p.currentToken}
+	block.Statements = []ast.Statement{}
+
+	p.nextToken()
+
+	for !p.currentTokenIs(token.RIGHT_BRACE) && !p.currentTokenIs(token.EOF) {
+		statement := p.parseStatement()
+		if statement != nil {
+			block.Statements = append(block.Statements, statement)
+		}
+
+		p.nextToken()
+	}
+
+	return block
 }
 
 func (p *Parser) currentTokenIs(expectedCurrentToken token.TokenType) bool {
