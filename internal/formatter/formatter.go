@@ -6,15 +6,19 @@ import (
 	"io"
 	"strings"
 
+	"github.com/pakut2/w-format/internal/utilities"
 	"github.com/pakut2/w-format/pkg/whitespace"
 )
 
 type Formatter struct {
-	input                            bufio.Reader
+	input bufio.Reader
+
 	whitespaceInstructionTokens      []whitespace.Token
 	whitespaceFinalInstructionTokens []whitespace.Token
 	whitespaceTokenIndex             int
-	currentChar                      rune
+
+	previousChar rune
+	currentChar  rune
 }
 
 func NewFormatter(input io.Reader, whitespaceInstructions []whitespace.Instruction) *Formatter {
@@ -34,18 +38,8 @@ func NewFormatter(input io.Reader, whitespaceInstructions []whitespace.Instructi
 }
 
 func (f *Formatter) readChar() {
-	char, _, err := f.input.ReadRune()
-	if err != nil {
-		if err == io.EOF {
-			f.currentChar = 0
-
-			return
-		} else {
-			panic(err)
-		}
-	}
-
-	f.currentChar = char
+	f.previousChar = f.currentChar
+	f.currentChar = utilities.ReadRune(&f.input)
 }
 
 func (f *Formatter) Format(target io.Writer) {
@@ -54,9 +48,17 @@ func (f *Formatter) Format(target io.Writer) {
 	for f.currentChar != 0 {
 		switch f.currentChar {
 		case ' ', '\t':
-			err := formattedOutput.WriteByte(byte(f.getNextWhitespaceToken()))
-			if err != nil {
-				f.handleOutputError(err)
+			nextTwoChars, err := utilities.PeekTwoRunes(f.input)
+			if err == nil && nextTwoChars == "=>" {
+				if f.peekNextWhitespaceToken() == whitespace.LINE_FEED {
+					if _, err = formattedOutput.WriteString("\u2007"); err != nil {
+						f.handleOutputError(err)
+					}
+				}
+			} else {
+				if err := formattedOutput.WriteByte(byte(f.getNextWhitespaceToken())); err != nil {
+					f.handleOutputError(err)
+				}
 			}
 		case '\n':
 			_, err := formattedOutput.WriteString(string(f.getNextWhitespaceTokenUntil(whitespace.LINE_FEED)))
@@ -69,6 +71,31 @@ func (f *Formatter) Format(target io.Writer) {
 			_, err := formattedOutput.WriteString(fmt.Sprintf("%c%s%c", f.currentChar, f.sanitizeString(stringLiteral), f.currentChar))
 			if err != nil {
 				f.handleOutputError(err)
+			}
+		case '/':
+			if utilities.PeekRune(f.input) == '/' {
+				f.readChar()
+				commentLiteral := f.readComment()
+
+				_, err := formattedOutput.WriteString(fmt.Sprintf("//%s%s", f.sanitizeString(commentLiteral), f.getNextWhitespaceTokenUntil(whitespace.LINE_FEED)))
+				if err != nil {
+					f.handleOutputError(err)
+				}
+			} else if utilities.PeekRune(f.input) == '*' {
+				f.readChar()
+				blockCommentLiteral := f.readBlockComment()
+
+				_, err := formattedOutput.WriteString(fmt.Sprintf("/*%s*/", f.sanitizeString(blockCommentLiteral)))
+				if err != nil {
+					f.handleOutputError(err)
+				}
+
+				f.readChar()
+			} else {
+				_, err := formattedOutput.WriteRune(f.currentChar)
+				if err != nil {
+					f.handleOutputError(err)
+				}
 			}
 		default:
 			_, err := formattedOutput.WriteRune(f.currentChar)
@@ -92,10 +119,19 @@ func (f *Formatter) Format(target io.Writer) {
 		f.handleOutputError(err)
 	}
 
-	err = formattedOutput.Flush()
-	if err != nil {
+	if err = formattedOutput.Flush(); err != nil {
 		f.handleOutputError(err)
 	}
+}
+
+func (f *Formatter) peekNextWhitespaceToken() whitespace.Token {
+	nextTokenIndex := f.whitespaceTokenIndex + 1
+
+	if nextTokenIndex >= len(f.whitespaceInstructionTokens)-1 {
+		return whitespace.Noop().Body[0]
+	}
+
+	return f.whitespaceInstructionTokens[nextTokenIndex]
 }
 
 func (f *Formatter) getNextWhitespaceToken() whitespace.Token {
@@ -103,39 +139,37 @@ func (f *Formatter) getNextWhitespaceToken() whitespace.Token {
 		f.whitespaceInstructionTokens = append(f.whitespaceInstructionTokens, whitespace.Noop().Body...)
 	}
 
-	whitespaceToken := f.whitespaceInstructionTokens[f.whitespaceTokenIndex]
+	token := f.whitespaceInstructionTokens[f.whitespaceTokenIndex]
 
 	f.whitespaceTokenIndex++
 
-	return whitespaceToken
+	return token
 }
 
 func (f *Formatter) getNextWhitespaceTokenUntil(target whitespace.Token) []whitespace.Token {
-	initialWhitespaceTokenIndex := f.whitespaceTokenIndex
+	var tokens []whitespace.Token
 
-	for _, whitespaceToken := range f.whitespaceInstructionTokens[initialWhitespaceTokenIndex:] {
-		if f.whitespaceTokenIndex >= len(f.whitespaceInstructionTokens)-1 {
-			break
-		}
+	for {
+		currentToken := f.getNextWhitespaceToken()
+		tokens = append(tokens, currentToken)
 
-		f.whitespaceTokenIndex++
-
-		if whitespaceToken == target {
+		if currentToken == target {
 			break
 		}
 	}
 
-	return f.whitespaceInstructionTokens[initialWhitespaceTokenIndex:f.whitespaceTokenIndex]
+	return tokens
 }
 
-// TODO don't break on different quote than string start
 func (f *Formatter) readString() string {
+	startingQuote := f.currentChar
+
 	var stringLiteral string
 
 	for {
 		f.readChar()
 
-		if f.currentChar == '"' || f.currentChar == '\'' || f.currentChar == '`' || f.currentChar == 0 {
+		if f.currentChar == 0 || (f.currentChar == startingQuote && f.previousChar != '\\') {
 			break
 		}
 
@@ -143,6 +177,38 @@ func (f *Formatter) readString() string {
 	}
 
 	return stringLiteral
+}
+
+func (f *Formatter) readComment() string {
+	var commentLiteral string
+
+	for {
+		f.readChar()
+
+		if f.currentChar == 0 || f.currentChar == '\n' {
+			break
+		}
+
+		commentLiteral = fmt.Sprintf("%s%c", commentLiteral, f.currentChar)
+	}
+
+	return commentLiteral
+}
+
+func (f *Formatter) readBlockComment() string {
+	var blockCommentLiteral string
+
+	for {
+		f.readChar()
+
+		if f.currentChar == 0 || (f.currentChar == '*' && utilities.PeekRune(f.input) == '/') {
+			break
+		}
+
+		blockCommentLiteral = fmt.Sprintf("%s%c", blockCommentLiteral, f.currentChar)
+	}
+
+	return blockCommentLiteral
 }
 
 func (f *Formatter) sanitizeString(value string) string {
