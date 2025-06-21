@@ -47,8 +47,28 @@ func PushToStack() Instruction {
 	}
 }
 
+func SwapTwoTopStackItems() Instruction {
+	return Instruction{
+		Body: []Token{SPACE, LINE_FEED, TAB},
+	}
+}
+
+func LiftStackItem(itemOrdinalNumber int) Instruction {
+	itemOrdinalNumberLiteral := NumberLiteral(int64(itemOrdinalNumber))
+
+	return Instruction{
+		Body: append([]Token{SPACE, TAB, SPACE}, itemOrdinalNumberLiteral.Body...),
+	}
+}
+
 func NumberLiteral(value int64) Instruction {
-	instruction := Instruction{Body: []Token{SPACE}}
+	var instruction Instruction
+
+	if value >= 0 {
+		instruction = Instruction{Body: []Token{SPACE}}
+	} else {
+		instruction = Instruction{Body: []Token{TAB}}
+	}
 
 	binaryNumber := strconv.FormatInt(value, 2)
 
@@ -76,6 +96,68 @@ func PrintTopStackChar() Instruction {
 func PrintTopStackInteger() Instruction {
 	return Instruction{
 		Body: []Token{TAB, LINE_FEED, SPACE, TAB},
+	}
+}
+
+func Add() Instruction {
+	return Instruction{
+		Body: []Token{TAB, SPACE, SPACE, SPACE},
+	}
+}
+
+func Subtract() Instruction {
+	return Instruction{
+		Body: []Token{TAB, SPACE, SPACE, TAB},
+	}
+}
+
+func Multiply() Instruction {
+	return Instruction{
+		Body: []Token{TAB, SPACE, SPACE, LINE_FEED},
+	}
+}
+
+func Divide() Instruction {
+	return Instruction{
+		Body: []Token{TAB, SPACE, TAB, SPACE},
+	}
+}
+
+func Modulo() Instruction {
+	return Instruction{
+		Body: []Token{TAB, SPACE, TAB, TAB},
+	}
+}
+
+func Label(labelId int64) Instruction {
+	labelIdLiteral := NumberLiteral(labelId)
+
+	return Instruction{
+		Body: append([]Token{LINE_FEED, SPACE, SPACE}, labelIdLiteral.Body...),
+	}
+}
+
+func JumpToLabel(labelId int64) Instruction {
+	labelIdLiteral := NumberLiteral(labelId)
+
+	return Instruction{
+		Body: append([]Token{LINE_FEED, SPACE, LINE_FEED}, labelIdLiteral.Body...),
+	}
+}
+
+func JumpToLabelIfZero(labelId int64) Instruction {
+	labelIdLiteral := NumberLiteral(labelId)
+
+	return Instruction{
+		Body: append([]Token{LINE_FEED, TAB, SPACE}, labelIdLiteral.Body...),
+	}
+}
+
+func JumpToLabelIfNegative(labelId int64) Instruction {
+	labelIdLiteral := NumberLiteral(labelId)
+
+	return Instruction{
+		Body: append([]Token{LINE_FEED, TAB, TAB}, labelIdLiteral.Body...),
 	}
 }
 

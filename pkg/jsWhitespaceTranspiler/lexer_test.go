@@ -15,6 +15,9 @@ let text = "value";
 let number1 = 1337;
 let number2 = number1;
 console.log(text, number1, number2);
+
+let expression = (number1 + 2) / 2 > 1000;
+expression === 1;
 `
 
 	expectedTokens := []token.Token{
@@ -50,6 +53,26 @@ console.log(text, number1, number2);
 		{Type: token.IDENTIFIER, Literal: "number2"},
 		{Type: token.RIGHT_PARENTHESIS, Literal: ")"},
 		{Type: token.SEMICOLON, Literal: ";"},
+
+		{Type: token.LET, Literal: "let"},
+		{Type: token.IDENTIFIER, Literal: "expression"},
+		{Type: token.ASSIGN, Literal: "="},
+		{Type: token.LEFT_PARENTHESIS, Literal: "("},
+		{Type: token.IDENTIFIER, Literal: "number1"},
+		{Type: token.PLUS, Literal: "+"},
+		{Type: token.INT, Literal: "2"},
+		{Type: token.RIGHT_PARENTHESIS, Literal: ")"},
+		{Type: token.SLASH, Literal: "/"},
+		{Type: token.INT, Literal: "2"},
+		{Type: token.GREATER_THAN, Literal: ">"},
+		{Type: token.INT, Literal: "1000"},
+		{Type: token.SEMICOLON, Literal: ";"},
+
+		{Type: token.IDENTIFIER, Literal: "expression"},
+		{Type: token.EQUALS, Literal: "==="},
+		{Type: token.INT, Literal: "1"},
+		{Type: token.SEMICOLON, Literal: ";"},
+
 		{Type: token.EOF, Literal: ""},
 	}
 

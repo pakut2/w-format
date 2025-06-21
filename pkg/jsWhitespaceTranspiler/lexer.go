@@ -2,8 +2,10 @@ package jsWhitespaceTranspiler
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
+	"unicode/utf8"
 
 	"github.com/pakut2/w-format/pkg/jsWhitespaceTranspiler/internal/token"
 )
@@ -36,6 +38,53 @@ func (l *Lexer) readChar() {
 	l.currentChar = char
 }
 
+func (l *Lexer) peekChar() rune {
+	for peekBytes := 4; peekBytes > 0; peekBytes-- {
+		peekCharResult, err := l.input.Peek(peekBytes)
+		if err == nil {
+			char, _ := utf8.DecodeRune(peekCharResult)
+			if char == utf8.RuneError {
+				return 0
+			}
+
+			return char
+		}
+	}
+
+	return 0
+}
+
+func (l *Lexer) peekTwoChars() (string, error) {
+	peekResultBuffer, err := l.input.Peek(8)
+	if err != nil && len(peekResultBuffer) == 0 {
+		return "", err
+	}
+
+	char1, char1Size := utf8.DecodeRune(peekResultBuffer)
+
+	if char1 == utf8.RuneError && char1Size == 1 {
+		return "", errors.New("malformed input")
+	}
+
+	if char1Size == 0 {
+		return "", errors.New("malformed input")
+	}
+
+	peekResultChar2Buffer := peekResultBuffer[char1Size:]
+
+	char2, char2Size := utf8.DecodeRune(peekResultChar2Buffer)
+
+	if char2 == utf8.RuneError && char2Size == 1 {
+		return "", errors.New("malformed input")
+	}
+
+	if char2Size == 0 {
+		return "", errors.New("malformed input")
+	}
+
+	return string([]rune{char1, char2}), nil
+}
+
 func (l *Lexer) NextToken() token.Token {
 	var currentToken token.Token
 
@@ -52,8 +101,72 @@ func (l *Lexer) NextToken() token.Token {
 		currentToken = token.NewTokenFromChar(token.RIGHT_PARENTHESIS, l.currentChar, l.currentLineNumber)
 	case '"', '\'', '`':
 		currentToken = token.NewTokenFromString(token.STRING, l.readString(), l.currentLineNumber)
+	case '+':
+		currentToken = token.NewTokenFromChar(token.PLUS, l.currentChar, l.currentLineNumber)
+	case '-':
+		currentToken = token.NewTokenFromChar(token.MINUS, l.currentChar, l.currentLineNumber)
+	case '*':
+		currentToken = token.NewTokenFromChar(token.ASTERISK, l.currentChar, l.currentLineNumber)
+	case '/':
+		currentToken = token.NewTokenFromChar(token.SLASH, l.currentChar, l.currentLineNumber)
+	case '%':
+		currentToken = token.NewTokenFromChar(token.PERCENT, l.currentChar, l.currentLineNumber)
 	case '=':
-		currentToken = token.NewTokenFromChar(token.ASSIGN, l.currentChar, l.currentLineNumber)
+		nextChars, err := l.peekTwoChars()
+		if err == nil && nextChars == "==" {
+			startingCharacter := l.currentChar
+			l.readChar()
+			l.readChar()
+
+			currentToken = token.NewTokenFromString(
+				token.EQUALS,
+				fmt.Sprintf("%c%s", startingCharacter, nextChars),
+				l.currentLineNumber,
+			)
+		} else {
+			currentToken = token.NewTokenFromChar(token.ASSIGN, l.currentChar, l.currentLineNumber)
+		}
+	case '!':
+		nextChars, err := l.peekTwoChars()
+		if err == nil && nextChars == "==" {
+			startingCharacter := l.currentChar
+			l.readChar()
+			l.readChar()
+
+			currentToken = token.NewTokenFromString(
+				token.NOT_EQUALS,
+				fmt.Sprintf("%c%s", startingCharacter, nextChars),
+				l.currentLineNumber,
+			)
+		} else {
+			currentToken = token.NewTokenFromChar(token.BANG, l.currentChar, l.currentLineNumber)
+		}
+	case '<':
+		if l.peekChar() == '=' {
+			startingCharacter := l.currentChar
+			l.readChar()
+
+			currentToken = token.NewTokenFromString(
+				token.LESS_THAN_OR_EQUAL,
+				fmt.Sprintf("%c%c", startingCharacter, l.currentChar),
+				l.currentLineNumber,
+			)
+		} else {
+			currentToken = token.NewTokenFromChar(token.LESS_THAN, l.currentChar, l.currentLineNumber)
+		}
+	case '>':
+		if l.peekChar() == '=' {
+			startingCharacter := l.currentChar
+			l.readChar()
+
+			currentToken = token.NewTokenFromString(
+				token.GREATER_THAN_OR_EQUAL,
+				fmt.Sprintf("%c%c", startingCharacter, l.currentChar),
+				l.currentLineNumber,
+			)
+		} else {
+			currentToken = token.NewTokenFromChar(token.GREATER_THAN, l.currentChar, l.currentLineNumber)
+		}
 	case 0:
 		currentToken = token.NewTokenFromString(token.EOF, "", l.currentLineNumber)
 	default:
