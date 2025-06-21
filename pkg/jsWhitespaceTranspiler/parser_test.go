@@ -20,7 +20,7 @@ let number2 = number1;
 console.log(text, number1, number2);
 
 let expression = (number1 + 2) / 2 > 1000;
-expression === 1;
+expression === true;
 `
 	expectedAst := &ast.Program{
 		Statements: []ast.Statement{
@@ -132,7 +132,7 @@ expression === 1;
 						Value: "expression",
 					},
 					Right: &ast.IntegerLiteral{
-						Token: token.Token{Type: token.INT, Literal: "1", LineNumber: 10},
+						Token: token.Token{Type: token.TRUE, Literal: "true", LineNumber: 10},
 						Value: 1,
 					},
 				},

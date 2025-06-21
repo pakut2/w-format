@@ -17,7 +17,7 @@ let number2 = number1;
 console.log(text, number1, number2);
 
 let expression = (number1 + 2) / 2 > 1000;
-expression === 1;
+expression === true;
 `
 
 	expectedTokens := []token.Token{
@@ -70,7 +70,7 @@ expression === 1;
 
 		{Type: token.IDENTIFIER, Literal: "expression"},
 		{Type: token.EQUALS, Literal: "==="},
-		{Type: token.INT, Literal: "1"},
+		{Type: token.TRUE, Literal: "true"},
 		{Type: token.SEMICOLON, Literal: ";"},
 
 		{Type: token.EOF, Literal: ""},

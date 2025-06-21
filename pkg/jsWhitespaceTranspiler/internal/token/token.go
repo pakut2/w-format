@@ -35,11 +35,15 @@ const (
 	LEFT_PARENTHESIS  = "("
 	RIGHT_PARENTHESIS = ")"
 
-	LET = "LET"
+	LET   = "LET"
+	TRUE  = "TRUE"
+	FALSE = "FALSE"
 )
 
 var keywords = map[string]TokenType{
-	"let": LET,
+	"let":   LET,
+	"true":  TRUE,
+	"false": FALSE,
 }
 
 func LookupIdentifier(identifier string) TokenType {
