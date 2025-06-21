@@ -9,11 +9,13 @@ import (
 )
 
 type Transpiler struct {
-	instructions       []whitespace.Instruction
+	instructions []whitespace.Instruction
+
 	currentHeapAddress int64
 	currentLabelId     int64
-	environment        *object.Environment
-	builtInFunctions   map[string]*object.BuiltIn
+
+	environment      *object.Environment
+	builtInFunctions map[string]*object.BuiltIn
 }
 
 func NewTranspiler() *Transpiler {
@@ -386,5 +388,5 @@ func (t *Transpiler) divisionInstruction(heapAddress1 int64, heapAddress2 int64)
 
 func (t *Transpiler) moduloInstruction(heapAddress1 int64, heapAddress2 int64) {
 	t.retrieveMultipleFromHeapInstruction(heapAddress1, heapAddress2)
-	t.addInstruction(whitespace.Modulo())
+	t.addInstruction(whitespace.Mod())
 }

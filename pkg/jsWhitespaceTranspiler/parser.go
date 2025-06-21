@@ -9,8 +9,8 @@ import (
 )
 
 type (
-	prefixParseFn func() ast.Expression
-	infixParseFn  func(ast.Expression) ast.Expression
+	prefixParseFunc func() ast.Expression
+	infixParseFunc  func(ast.Expression) ast.Expression
 )
 
 const (
@@ -46,8 +46,8 @@ type Parser struct {
 	currentToken token.Token
 	peekToken    token.Token
 
-	prefixParseFns map[token.TokenType]prefixParseFn
-	infixParseFns  map[token.TokenType]infixParseFn
+	prefixParseFuncs map[token.TokenType]prefixParseFunc
+	infixParseFuncs  map[token.TokenType]infixParseFunc
 }
 
 func NewParser(l *Lexer) *Parser {
@@ -56,29 +56,29 @@ func NewParser(l *Lexer) *Parser {
 	p.nextToken()
 	p.nextToken()
 
-	p.prefixParseFns = make(map[token.TokenType]prefixParseFn)
-	p.registerPrefix(token.IDENTIFIER, p.parseIdentifier)
-	p.registerPrefix(token.STRING, p.parseStringLiteral)
-	p.registerPrefix(token.INT, p.parseIntegerLiteral)
-	p.registerPrefix(token.MINUS, p.parsePrefixExpression)
-	p.registerPrefix(token.LEFT_PARENTHESIS, p.parseGroupedExpression)
-	p.registerPrefix(token.BANG, p.parsePrefixExpression)
-	p.registerPrefix(token.TRUE, p.parseBoolean)
-	p.registerPrefix(token.FALSE, p.parseBoolean)
+	p.prefixParseFuncs = make(map[token.TokenType]prefixParseFunc)
+	p.registerPrefixFunc(token.IDENTIFIER, p.parseIdentifier)
+	p.registerPrefixFunc(token.STRING, p.parseStringLiteral)
+	p.registerPrefixFunc(token.INT, p.parseIntegerLiteral)
+	p.registerPrefixFunc(token.MINUS, p.parsePrefixExpression)
+	p.registerPrefixFunc(token.LEFT_PARENTHESIS, p.parseGroupedExpression)
+	p.registerPrefixFunc(token.BANG, p.parsePrefixExpression)
+	p.registerPrefixFunc(token.TRUE, p.parseBoolean)
+	p.registerPrefixFunc(token.FALSE, p.parseBoolean)
 
-	p.infixParseFns = make(map[token.TokenType]infixParseFn)
-	p.registerInfix(token.LEFT_PARENTHESIS, p.parseCallExpression)
-	p.registerInfix(token.PLUS, p.parseInfixExpression)
-	p.registerInfix(token.MINUS, p.parseInfixExpression)
-	p.registerInfix(token.ASTERISK, p.parseInfixExpression)
-	p.registerInfix(token.SLASH, p.parseInfixExpression)
-	p.registerInfix(token.PERCENT, p.parseInfixExpression)
-	p.registerInfix(token.EQUALS, p.parseInfixExpression)
-	p.registerInfix(token.NOT_EQUALS, p.parseInfixExpression)
-	p.registerInfix(token.LESS_THAN, p.parseInfixExpression)
-	p.registerInfix(token.LESS_THAN_OR_EQUAL, p.parseInfixExpression)
-	p.registerInfix(token.GREATER_THAN, p.parseInfixExpression)
-	p.registerInfix(token.GREATER_THAN_OR_EQUAL, p.parseInfixExpression)
+	p.infixParseFuncs = make(map[token.TokenType]infixParseFunc)
+	p.registerInfixFunc(token.LEFT_PARENTHESIS, p.parseCallExpression)
+	p.registerInfixFunc(token.PLUS, p.parseInfixExpression)
+	p.registerInfixFunc(token.MINUS, p.parseInfixExpression)
+	p.registerInfixFunc(token.ASTERISK, p.parseInfixExpression)
+	p.registerInfixFunc(token.SLASH, p.parseInfixExpression)
+	p.registerInfixFunc(token.PERCENT, p.parseInfixExpression)
+	p.registerInfixFunc(token.EQUALS, p.parseInfixExpression)
+	p.registerInfixFunc(token.NOT_EQUALS, p.parseInfixExpression)
+	p.registerInfixFunc(token.LESS_THAN, p.parseInfixExpression)
+	p.registerInfixFunc(token.LESS_THAN_OR_EQUAL, p.parseInfixExpression)
+	p.registerInfixFunc(token.GREATER_THAN, p.parseInfixExpression)
+	p.registerInfixFunc(token.GREATER_THAN_OR_EQUAL, p.parseInfixExpression)
 
 	return p
 }
@@ -88,12 +88,12 @@ func (p *Parser) nextToken() {
 	p.peekToken = p.l.NextToken()
 }
 
-func (p *Parser) registerPrefix(TokenType token.TokenType, fn prefixParseFn) {
-	p.prefixParseFns[TokenType] = fn
+func (p *Parser) registerPrefixFunc(TokenType token.TokenType, fn prefixParseFunc) {
+	p.prefixParseFuncs[TokenType] = fn
 }
 
-func (p *Parser) registerInfix(TokenType token.TokenType, fn infixParseFn) {
-	p.infixParseFns[TokenType] = fn
+func (p *Parser) registerInfixFunc(TokenType token.TokenType, fn infixParseFunc) {
+	p.infixParseFuncs[TokenType] = fn
 }
 
 func (p *Parser) ParseProgram() *ast.Program {
@@ -164,7 +164,7 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 }
 
 func (p *Parser) parseExpression(precedence int) ast.Expression {
-	prefix := p.prefixParseFns[p.currentToken.Type]
+	prefix := p.prefixParseFuncs[p.currentToken.Type]
 	if prefix == nil {
 		panic(fmt.Sprintf("[:%d] no prefix parse function for %s found", p.currentToken.LineNumber, p.currentToken.Type))
 
@@ -174,7 +174,7 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 	leftExpression := prefix()
 
 	for !p.peekTokenIs(token.SEMICOLON) && precedence < p.peekPrecedence() {
-		infix := p.infixParseFns[p.peekToken.Type]
+		infix := p.infixParseFuncs[p.peekToken.Type]
 		if infix == nil {
 			return leftExpression
 		}

@@ -11,7 +11,8 @@ import (
 )
 
 type Lexer struct {
-	input             bufio.Reader
+	input bufio.Reader
+
 	currentChar       rune
 	currentLineNumber int
 }

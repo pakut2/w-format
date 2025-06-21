@@ -123,7 +123,7 @@ func Divide() Instruction {
 	}
 }
 
-func Modulo() Instruction {
+func Mod() Instruction {
 	return Instruction{
 		Body: []Token{TAB, SPACE, TAB, TAB},
 	}
