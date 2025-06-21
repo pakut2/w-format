@@ -126,12 +126,12 @@ func (t *Transpiler) Transpile(node ast.Node) object.Object {
 	case *ast.PrefixExpression:
 		rightExpression := t.Transpile(node.Right)
 
-		return t.transpilePrefixExpression(node.Operator, rightExpression)
+		return t.transpilePrefixExpression(node, rightExpression)
 	case *ast.InfixExpression:
 		leftExpression := t.Transpile(node.Left)
 		rightExpression := t.Transpile(node.Right)
 
-		return t.transpileInfixExpression(node.Operator, leftExpression, rightExpression)
+		return t.transpileInfixExpression(node, leftExpression, rightExpression)
 	case *ast.IfExpression:
 		return t.transpileIfExpression(node)
 	}
@@ -214,14 +214,14 @@ func (t *Transpiler) applyFunction(function object.Object, args []object.Object)
 	}
 }
 
-func (t *Transpiler) transpilePrefixExpression(operator string, rightExpression object.Object) object.Object {
-	switch operator {
+func (t *Transpiler) transpilePrefixExpression(expression *ast.PrefixExpression, rightExpression object.Object) object.Object {
+	switch expression.Operator {
 	case ast.SUBTRACTION:
 		return t.transpileMinusPrefixOperatorExpression(rightExpression)
 	case ast.NEGATION:
 		return t.transpileNegationPrefixOperatorExpression(rightExpression)
 	default:
-		panic(fmt.Sprintf("unknown operator %s%s", operator, rightExpression.Type()))
+		panic(fmt.Sprintf("[:%d] unknown operator %s%s", expression.Token.LineNumber, expression.Operator, rightExpression.Type()))
 	}
 }
 
@@ -262,24 +262,39 @@ func (t *Transpiler) transpileNegationPrefixOperatorExpression(rightExpression o
 	return rightInteger
 }
 
-func (t *Transpiler) transpileInfixExpression(operator string, leftExpression, rightExpression object.Object) object.Object {
+func (t *Transpiler) transpileInfixExpression(expression *ast.InfixExpression, leftExpression, rightExpression object.Object) object.Object {
 	switch {
 	case leftExpression.Type() == object.INT_OBJ && rightExpression.Type() == object.INT_OBJ:
-		return t.transpileIntegerInfixExpression(operator, leftExpression, rightExpression)
+		return t.transpileIntegerInfixExpression(expression, leftExpression, rightExpression)
 	case leftExpression.Type() == object.STRING_OBJ && rightExpression.Type() == object.STRING_OBJ:
 		panic("unsupported")
 	case leftExpression.Type() != rightExpression.Type():
-		panic(fmt.Sprintf("type mismatch %s %s %s", leftExpression.Type(), operator, rightExpression.Type()))
+		panic(
+			fmt.Sprintf("[:%d] type mismatch %s %s %s",
+				expression.Token.LineNumber,
+				leftExpression.Type(),
+				expression.Operator,
+				rightExpression.Type(),
+			),
+		)
 	default:
-		panic(fmt.Sprintf("unknown operator %s %s %s", leftExpression.Type(), operator, rightExpression.Type()))
+		panic(
+			fmt.Sprintf(
+				"[:%d] unknown operator %s %s %s",
+				expression.Token.LineNumber,
+				leftExpression.Type(),
+				expression.Operator,
+				rightExpression.Type(),
+			),
+		)
 	}
 }
 
-func (t *Transpiler) transpileIntegerInfixExpression(operator string, leftExpression, rightExpression object.Object) object.Object {
+func (t *Transpiler) transpileIntegerInfixExpression(expression *ast.InfixExpression, leftExpression, rightExpression object.Object) object.Object {
 	leftHeapAddress := leftExpression.(*object.Integer).HeapAddress
 	rightHeapAddress := rightExpression.(*object.Integer).HeapAddress
 
-	switch operator {
+	switch expression.Operator {
 	case ast.ADDITION:
 		t.additionInstruction(leftHeapAddress, rightHeapAddress)
 	case ast.SUBTRACTION:
@@ -291,9 +306,16 @@ func (t *Transpiler) transpileIntegerInfixExpression(operator string, leftExpres
 	case ast.MODULO:
 		t.moduloInstruction(leftHeapAddress, rightHeapAddress)
 	case ast.EQUALS, ast.NOT_EQUALS, ast.LESS_THAN, ast.LESS_THAN_OR_EQUAL, ast.GREATER_THAN, ast.GREATER_THAN_OR_EQUAL:
-		t.integerBooleanInstruction(operator, leftHeapAddress, rightHeapAddress)
+		t.integerBooleanInstruction(expression.Operator, leftHeapAddress, rightHeapAddress)
 	default:
-		panic(fmt.Sprintf("unknown operator %s %s %s", leftExpression.Type(), operator, rightExpression.Type()))
+		panic(
+			fmt.Sprintf("[:%d] unknown operator %s %s %s",
+				expression.Token.LineNumber,
+				leftExpression.Type(),
+				expression.Operator,
+				rightExpression.Type(),
+			),
+		)
 	}
 
 	resultHeapAddress := t.getEmptyHeapAddress()
@@ -310,7 +332,7 @@ func (t *Transpiler) transpileIfExpression(ifExpression *ast.IfExpression) objec
 
 	conditionResultLiteral, ok := conditionResult.(*object.Integer)
 	if !ok {
-		panic("invalid if condition expression")
+		panic(fmt.Sprintf("[:%d] invalid if condition expression", ifExpression.Token.LineNumber))
 	}
 
 	t.retrieveFromHeapInstruction(conditionResultLiteral.HeapAddress)

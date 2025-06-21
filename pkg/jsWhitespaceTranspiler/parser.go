@@ -180,7 +180,7 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 func (p *Parser) parseExpression(precedence int) ast.Expression {
 	prefix := p.prefixParseFuncs[p.currentToken.Type]
 	if prefix == nil {
-		panic(fmt.Sprintf("[:%d] no prefix parse function for %s found", p.currentToken.LineNumber, p.currentToken.Type))
+		panic(fmt.Sprintf("[:%d] invalid expression token %s", p.currentToken.LineNumber, p.currentToken.Type))
 
 		return nil
 	}
