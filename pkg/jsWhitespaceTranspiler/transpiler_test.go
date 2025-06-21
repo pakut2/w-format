@@ -20,9 +20,9 @@ let expression = (number1 + 2) / 2 > 1000;
 expression === true;
 
 if (false) {
-  let expression = 1;
+	expression = 1;
 } else {
-  let expression = 2;
+	expression = 2;
 }
 `
 

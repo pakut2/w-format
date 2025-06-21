@@ -41,6 +41,14 @@ type LetStatement struct {
 
 func (ls *LetStatement) statementNode() {}
 
+type AssignmentStatement struct {
+	Token token.Token
+	Name  *Identifier
+	Value Expression
+}
+
+func (a *AssignmentStatement) statementNode() {}
+
 type ExpressionStatement struct {
 	Expression Expression
 }

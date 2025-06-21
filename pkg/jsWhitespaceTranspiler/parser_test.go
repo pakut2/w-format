@@ -23,9 +23,9 @@ let expression = (number1 + 2) / 2 > 1000;
 expression === true;
 
 if (false) {
-  let expression = 1;
+	expression = 1;
 } else {
-  let expression = 2;
+	expression = 2;
 }
 `
 
@@ -287,10 +287,10 @@ if (false) {
 							LineNumber: 12,
 						},
 						Statements: []ast.Statement{
-							&ast.LetStatement{
+							&ast.AssignmentStatement{
 								Token: token.Token{
-									Type:       token.LET,
-									Literal:    "let",
+									Type:       token.IDENTIFIER,
+									Literal:    "expression",
 									LineNumber: 13,
 								},
 								Name: &ast.Identifier{
@@ -319,10 +319,10 @@ if (false) {
 							LineNumber: 14,
 						},
 						Statements: []ast.Statement{
-							&ast.LetStatement{
+							&ast.AssignmentStatement{
 								Token: token.Token{
-									Type:       token.LET,
-									Literal:    "let",
+									Type:       token.IDENTIFIER,
+									Literal:    "expression",
 									LineNumber: 15,
 								},
 								Name: &ast.Identifier{
@@ -356,7 +356,7 @@ if (false) {
 
 	if !reflect.DeepEqual(parsedAst, expectedAst) {
 		expectedAstJson, _ := json.MarshalIndent(expectedAst, "", "  ")
-		parsedAstJson, _ := json.MarshalIndent(parsedAst.Statements[0], "", "  ")
+		parsedAstJson, _ := json.MarshalIndent(parsedAst.Statements, "", "  ")
 
 		t.Fatalf("invalid ast. expected=%s, got=%s", expectedAstJson, parsedAstJson)
 	}

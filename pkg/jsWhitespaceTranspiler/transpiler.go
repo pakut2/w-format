@@ -88,6 +88,23 @@ func (t *Transpiler) Transpile(node ast.Node) object.Object {
 		return t.transpileProgram(node)
 	case *ast.LetStatement:
 		value := t.Transpile(node.Value)
+
+		_, ok := t.environment.Get(node.Name.Value)
+		if ok {
+			panic(fmt.Sprintf("[:%d] redeclaration of %s", node.Token.LineNumber, node.Name.Value))
+		}
+
+		t.environment.Set(node.Name.Value, value)
+
+		return &object.Void{}
+	case *ast.AssignmentStatement:
+		value := t.Transpile(node.Value)
+
+		_, ok := t.environment.Get(node.Name.Value)
+		if !ok {
+			panic(fmt.Sprintf("[:%d] %s is not defined", node.Token.LineNumber, node.Name.Value))
+		}
+
 		t.environment.Set(node.Name.Value, value)
 
 		return &object.Void{}
@@ -119,7 +136,7 @@ func (t *Transpiler) Transpile(node ast.Node) object.Object {
 		return t.transpileIfExpression(node)
 	}
 
-	return nil
+	return &object.Void{}
 }
 
 func (t *Transpiler) transpileProgram(program *ast.Program) object.Object {
@@ -151,7 +168,7 @@ func (t *Transpiler) transpileIdentifier(identifier *ast.Identifier) object.Obje
 		return buildInFunction
 	}
 
-	panic(fmt.Sprintf("[:%d] identifier %s is not defined", identifier.Token.LineNumber, identifier.Value))
+	panic(fmt.Sprintf("[:%d] %s is not defined", identifier.Token.LineNumber, identifier.Value))
 }
 
 func (t *Transpiler) transpileString(value []byte) object.Object {

@@ -20,9 +20,9 @@ let expression = (number1 + 2) / 2 > 1000;
 expression === true;
 
 if (false) {
-  let expression = 1;
+	expression = 1;
 } else {
-  let expression = 2;
+	expression = 2;
 }
 `
 
@@ -84,7 +84,6 @@ if (false) {
 		{Type: token.FALSE, Literal: "false"},
 		{Type: token.RIGHT_PARENTHESIS, Literal: ")"},
 		{Type: token.LEFT_BRACE, Literal: "{"},
-		{Type: token.LET, Literal: "let"},
 		{Type: token.IDENTIFIER, Literal: "expression"},
 		{Type: token.ASSIGN, Literal: "="},
 		{Type: token.INT, Literal: "1"},
@@ -92,7 +91,6 @@ if (false) {
 		{Type: token.RIGHT_BRACE, Literal: "}"},
 		{Type: token.ELSE, Literal: "else"},
 		{Type: token.LEFT_BRACE, Literal: "{"},
-		{Type: token.LET, Literal: "let"},
 		{Type: token.IDENTIFIER, Literal: "expression"},
 		{Type: token.ASSIGN, Literal: "="},
 		{Type: token.INT, Literal: "2"},

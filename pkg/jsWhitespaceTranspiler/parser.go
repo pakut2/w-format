@@ -119,6 +119,10 @@ func (p *Parser) parseStatement() ast.Statement {
 	case token.LET:
 		return p.parseLetStatement()
 	default:
+		if p.currentTokenIs(token.IDENTIFIER) && p.peekTokenIs(token.ASSIGN) {
+			return p.parseAssignmentStatement()
+		}
+
 		return p.parseExpressionStatement()
 	}
 }
@@ -131,9 +135,18 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 	}
 
 	statement.Name = &ast.Identifier{Token: p.currentToken, Value: p.currentToken.Literal}
+	statement.Value = p.parseAssignmentStatement().Value
+
+	return statement
+}
+
+func (p *Parser) parseAssignmentStatement() *ast.AssignmentStatement {
+	statement := &ast.AssignmentStatement{Token: p.currentToken}
+
+	statement.Name = &ast.Identifier{Token: p.currentToken, Value: p.currentToken.Literal}
 
 	if !p.expectPeek(token.ASSIGN) {
-		panic(fmt.Sprintf("[:%d] invalid declaration statement, assignment must follow %q", p.currentToken.LineNumber, p.currentToken.Type))
+		panic(fmt.Sprintf("[:%d] invalid assignment statement, assignment must follow %q", p.currentToken.LineNumber, p.currentToken.Type))
 	}
 
 	p.nextToken()
@@ -144,7 +157,7 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 	for !p.currentTokenIs(token.SEMICOLON) {
 		// TODO check end of line
 		if p.currentTokenIs(token.EOF) {
-			panic(fmt.Sprintf("[:%d] missing semicolon at the end of let statement", expressionLineNumber))
+			panic(fmt.Sprintf("[:%d] missing semicolon at the end of assignment statement", expressionLineNumber))
 		}
 
 		p.nextToken()
