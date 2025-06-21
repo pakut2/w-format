@@ -11,7 +11,8 @@ import (
 )
 
 type Formatter struct {
-	input bufio.Reader
+	input  bufio.Reader
+	target bufio.Writer
 
 	whitespaceInstructionTokens      []whitespace.Token
 	whitespaceFinalInstructionTokens []whitespace.Token
@@ -21,8 +22,8 @@ type Formatter struct {
 	currentChar  rune
 }
 
-func NewFormatter(input io.Reader, whitespaceInstructions []whitespace.Instruction) *Formatter {
-	f := &Formatter{input: *bufio.NewReader(input), whitespaceTokenIndex: 0}
+func NewFormatter(input io.Reader, whitespaceInstructions []whitespace.Instruction, target io.Writer) *Formatter {
+	f := &Formatter{input: *bufio.NewReader(input), target: *bufio.NewWriter(target), whitespaceTokenIndex: 0}
 
 	whitespaceInstructionsLength := len(whitespaceInstructions)
 
@@ -42,84 +43,62 @@ func (f *Formatter) readChar() {
 	f.currentChar = utilities.ReadRune(&f.input)
 }
 
-func (f *Formatter) Format(target io.Writer) {
-	formattedOutput := bufio.NewWriter(target)
-
+func (f *Formatter) Format() {
 	for f.currentChar != 0 {
 		switch f.currentChar {
 		case ' ', '\t':
 			nextTwoChars, err := utilities.PeekTwoRunes(f.input)
 			if err == nil && nextTwoChars == "=>" {
 				if f.peekNextWhitespaceToken() == whitespace.LINE_FEED {
-					if _, err = formattedOutput.WriteString("\u2007"); err != nil {
-						f.handleOutputError(err)
-					}
+					f.writeString("\u2007")
 				}
 			} else {
-				if err := formattedOutput.WriteByte(byte(f.getNextWhitespaceToken())); err != nil {
+				if err = f.target.WriteByte(byte(f.getNextWhitespaceToken())); err != nil {
 					f.handleOutputError(err)
 				}
 			}
 		case '\n':
-			_, err := formattedOutput.WriteString(string(f.getNextWhitespaceTokenUntil(whitespace.LINE_FEED)))
-			if err != nil {
-				f.handleOutputError(err)
-			}
+			f.writeString(string(f.getNextWhitespaceTokenUntil(whitespace.LINE_FEED)))
 		case '"', '\'', '`':
 			stringLiteral := f.readString()
 
-			_, err := formattedOutput.WriteString(fmt.Sprintf("%c%s%c", f.currentChar, f.sanitizeString(stringLiteral), f.currentChar))
-			if err != nil {
-				f.handleOutputError(err)
-			}
+			f.writeString(fmt.Sprintf("%c%s%c", f.currentChar, f.sanitizeString(stringLiteral), f.currentChar))
 		case '/':
 			if utilities.PeekRune(f.input) == '/' {
 				f.readChar()
 				commentLiteral := f.readComment()
 
-				_, err := formattedOutput.WriteString(fmt.Sprintf("//%s%s", f.sanitizeString(commentLiteral), f.getNextWhitespaceTokenUntil(whitespace.LINE_FEED)))
-				if err != nil {
-					f.handleOutputError(err)
-				}
+				f.writeString(
+					fmt.Sprintf(
+						"//%s%s",
+						f.sanitizeString(commentLiteral),
+						f.getNextWhitespaceTokenUntil(whitespace.LINE_FEED),
+					),
+				)
 			} else if utilities.PeekRune(f.input) == '*' {
 				f.readChar()
 				blockCommentLiteral := f.readBlockComment()
 
-				_, err := formattedOutput.WriteString(fmt.Sprintf("/*%s*/", f.sanitizeString(blockCommentLiteral)))
-				if err != nil {
-					f.handleOutputError(err)
-				}
+				f.writeString(fmt.Sprintf("/*%s*/", f.sanitizeString(blockCommentLiteral)))
 
 				f.readChar()
 			} else {
-				_, err := formattedOutput.WriteRune(f.currentChar)
-				if err != nil {
-					f.handleOutputError(err)
-				}
+				f.writeChar(f.currentChar)
 			}
 		default:
-			_, err := formattedOutput.WriteRune(f.currentChar)
-			if err != nil {
-				f.handleOutputError(err)
-			}
+			f.writeChar(f.currentChar)
 		}
 
 		f.readChar()
 	}
 
 	if f.whitespaceTokenIndex < len(f.whitespaceInstructionTokens) {
-		_, err := formattedOutput.WriteString(string(f.whitespaceInstructionTokens[f.whitespaceTokenIndex:len(f.whitespaceInstructionTokens)]))
-		if err != nil {
-			f.handleOutputError(err)
-		}
+		f.writeString(string(f.whitespaceInstructionTokens[f.whitespaceTokenIndex:len(f.whitespaceInstructionTokens)]))
 	}
 
-	_, err := formattedOutput.WriteString(string(f.whitespaceFinalInstructionTokens))
-	if err != nil {
-		f.handleOutputError(err)
-	}
+	f.writeString(string(f.whitespaceFinalInstructionTokens))
 
-	if err = formattedOutput.Flush(); err != nil {
+	if err := f.target.Flush(); err != nil {
 		f.handleOutputError(err)
 	}
 }
@@ -217,6 +196,20 @@ func (f *Formatter) sanitizeString(value string) string {
 	sanitizedString = strings.ReplaceAll(sanitizedString, "\n", "\u2028")
 
 	return sanitizedString
+}
+
+func (f *Formatter) writeChar(char rune) {
+	_, err := f.target.WriteRune(char)
+	if err != nil {
+		f.handleOutputError(err)
+	}
+}
+
+func (f *Formatter) writeString(value string) {
+	_, err := f.target.WriteString(value)
+	if err != nil {
+		f.handleOutputError(err)
+	}
 }
 
 func (f *Formatter) handleOutputError(err error) {

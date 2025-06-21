@@ -57,7 +57,7 @@ func main() {
 		formatOutput = os.Stdout
 	}
 
-	formatter.NewFormatter(formatTarget, whitespace.Instructions()).Format(formatOutput)
+	formatter.NewFormatter(formatTarget, whitespace.Instructions(), formatOutput).Format()
 
 	if args.formatOutputFilePath.Valid {
 		fmt.Printf("formatted file saved to %q\n", args.formatOutputFilePath.Value)
