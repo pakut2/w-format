@@ -7,7 +7,7 @@ import (
 	"github.com/pakut2/w-format/pkg/whitespace"
 )
 
-func TestPrint(t *testing.T) {
+func TestTranspiler(t *testing.T) {
 	input := `
 console.log('Hello', 42);
 
@@ -23,6 +23,12 @@ if (false) {
 	expression = 1;
 } else {
 	expression = 2;
+}
+
+for (let i = 0; i < 10; i++) {
+    if (i % 2 === 0) {
+        continue;
+    }
 }
 `
 
@@ -199,13 +205,116 @@ if (false) {
 		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.LINE_FEED}},
 		{Body: []whitespace.Token{whitespace.TAB, whitespace.TAB, whitespace.SPACE}},
 		{Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.TAB, whitespace.TAB, whitespace.SPACE}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.TAB, whitespace.TAB, whitespace.SPACE}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.TAB, whitespace.TAB, whitespace.TAB}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.TAB, whitespace.TAB, whitespace.TAB}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.LINE_FEED, whitespace.TAB}},
+		{Body: []whitespace.Token{whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.TAB}},
+		{Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.TAB, whitespace.TAB, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.SPACE, whitespace.LINE_FEED, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.LINE_FEED, whitespace.TAB}},
+		{Body: []whitespace.Token{whitespace.TAB, whitespace.TAB, whitespace.SPACE}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.TAB, whitespace.TAB, whitespace.TAB}},
+		{Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.SPACE, whitespace.LINE_FEED, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.TAB, whitespace.TAB, whitespace.TAB}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.LINE_FEED, whitespace.TAB}},
+		{Body: []whitespace.Token{whitespace.TAB, whitespace.TAB, whitespace.SPACE}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.TAB, whitespace.TAB, whitespace.TAB}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.LINE_FEED, whitespace.TAB}},
+		{Body: []whitespace.Token{whitespace.TAB, whitespace.TAB, whitespace.SPACE}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.TAB, whitespace.TAB, whitespace.SPACE}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.TAB, whitespace.TAB, whitespace.TAB}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.TAB, whitespace.TAB, whitespace.TAB}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.LINE_FEED, whitespace.TAB}},
+		{Body: []whitespace.Token{whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.TAB}},
+		{Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.TAB, whitespace.TAB, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.SPACE, whitespace.LINE_FEED, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.SPACE, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.SPACE, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.TAB, whitespace.SPACE, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.LINE_FEED, whitespace.TAB}},
+		{Body: []whitespace.Token{whitespace.TAB, whitespace.TAB, whitespace.SPACE}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.TAB, whitespace.SPACE, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.TAB, whitespace.TAB, whitespace.TAB}},
+		{Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.TAB, whitespace.TAB, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.TAB, whitespace.TAB, whitespace.SPACE}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.TAB, whitespace.TAB, whitespace.TAB}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.TAB, whitespace.TAB, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.TAB, whitespace.TAB, whitespace.TAB}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.LINE_FEED, whitespace.TAB}},
+		{Body: []whitespace.Token{whitespace.TAB, whitespace.SPACE, whitespace.TAB, whitespace.TAB}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.TAB, whitespace.TAB, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.LINE_FEED, whitespace.TAB}},
+		{Body: []whitespace.Token{whitespace.TAB, whitespace.TAB, whitespace.SPACE}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.TAB, whitespace.TAB, whitespace.SPACE}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.TAB, whitespace.TAB, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.TAB, whitespace.TAB, whitespace.TAB}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.TAB, whitespace.TAB, whitespace.TAB}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.LINE_FEED, whitespace.TAB}},
+		{Body: []whitespace.Token{whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.TAB}},
+		{Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.SPACE, whitespace.LINE_FEED, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.LINE_FEED, whitespace.TAB}},
+		{Body: []whitespace.Token{whitespace.TAB, whitespace.TAB, whitespace.SPACE}},
+		{Body: []whitespace.Token{whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.TAB, whitespace.TAB, whitespace.TAB}},
+		{Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.TAB, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.SPACE, whitespace.LINE_FEED, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.SPACE, whitespace.LINE_FEED, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.TAB, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.TAB, whitespace.SPACE, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.TAB, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.SPACE, whitespace.LINE_FEED, whitespace.SPACE, whitespace.TAB, whitespace.TAB, whitespace.TAB, whitespace.LINE_FEED}},
+		{Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.SPACE, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.SPACE, whitespace.SPACE, whitespace.TAB, whitespace.LINE_FEED}},
 		{Body: []whitespace.Token{whitespace.LINE_FEED, whitespace.LINE_FEED, whitespace.LINE_FEED}},
 	}
 
 	lexer := NewLexer(strings.NewReader(input))
 	parsedAst := NewParser(lexer).ParseProgram()
 
-	whitespaceProgram := NewTranspiler().Transpile(parsedAst)
+	whitespaceProgram := NewTranspiler().TranspileProgram(parsedAst)
 
 	for i, instruction := range whitespaceProgram.Instructions() {
 		currentInstruction := instruction.String()

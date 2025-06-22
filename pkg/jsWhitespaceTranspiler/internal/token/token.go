@@ -29,6 +29,8 @@ const (
 	LESS_THAN_OR_EQUAL    = "<="
 	GREATER_THAN          = ">"
 	GREATER_THAN_OR_EQUAL = ">="
+	INCREMENT             = "++"
+	DECREMENT             = "--"
 
 	COMMA             = ","
 	SEMICOLON         = ";"
@@ -37,19 +39,25 @@ const (
 	LEFT_BRACE        = "{"
 	RIGHT_BRACE       = "}"
 
-	LET   = "LET"
-	TRUE  = "TRUE"
-	FALSE = "FALSE"
-	IF    = "IF"
-	ELSE  = "ELSE"
+	LET      = "LET"
+	TRUE     = "TRUE"
+	FALSE    = "FALSE"
+	IF       = "IF"
+	ELSE     = "ELSE"
+	FOR      = "FOR"
+	BREAK    = "BREAK"
+	CONTINUE = "CONTINUE"
 )
 
 var keywords = map[string]TokenType{
-	"let":   LET,
-	"true":  TRUE,
-	"false": FALSE,
-	"if":    IF,
-	"else":  ELSE,
+	"let":      LET,
+	"true":     TRUE,
+	"false":    FALSE,
+	"if":       IF,
+	"else":     ELSE,
+	"for":      FOR,
+	"break":    BREAK,
+	"continue": CONTINUE,
 }
 
 func LookupIdentifier(identifier string) TokenType {

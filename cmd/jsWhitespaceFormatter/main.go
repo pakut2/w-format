@@ -29,7 +29,7 @@ func main() {
 
 	lexer := jsWhitespaceTranspiler.NewLexer(sourceFile)
 	parsedSource := jsWhitespaceTranspiler.NewParser(lexer).ParseProgram()
-	whitespace := jsWhitespaceTranspiler.NewTranspiler().Transpile(parsedSource)
+	whitespace := jsWhitespaceTranspiler.NewTranspiler().TranspileProgram(parsedSource)
 
 	var formatTarget io.Reader
 	if args.formatTargetFilePath.Valid {

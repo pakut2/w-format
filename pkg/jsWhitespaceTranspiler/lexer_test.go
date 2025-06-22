@@ -24,6 +24,12 @@ if (false) {
 } else {
 	expression = 2;
 }
+
+for (let i = 0; i < 10; i++) { 
+	if (i % 2 === 0) {
+		continue;
+	}
+}
 `
 
 	expectedTokens := []token.Token{
@@ -95,6 +101,35 @@ if (false) {
 		{Type: token.ASSIGN, Literal: "="},
 		{Type: token.INT, Literal: "2"},
 		{Type: token.SEMICOLON, Literal: ";"},
+		{Type: token.RIGHT_BRACE, Literal: "}"},
+
+		{Type: token.FOR, Literal: "for"},
+		{Type: token.LEFT_PARENTHESIS, Literal: "("},
+		{Type: token.LET, Literal: "let"},
+		{Type: token.IDENTIFIER, Literal: "i"},
+		{Type: token.ASSIGN, Literal: "="},
+		{Type: token.INT, Literal: "0"},
+		{Type: token.SEMICOLON, Literal: ";"},
+		{Type: token.IDENTIFIER, Literal: "i"},
+		{Type: token.LESS_THAN, Literal: "<"},
+		{Type: token.INT, Literal: "10"},
+		{Type: token.SEMICOLON, Literal: ";"},
+		{Type: token.IDENTIFIER, Literal: "i"},
+		{Type: token.INCREMENT, Literal: "++"},
+		{Type: token.RIGHT_PARENTHESIS, Literal: ")"},
+		{Type: token.LEFT_BRACE, Literal: "{"},
+		{Type: token.IF, Literal: "if"},
+		{Type: token.LEFT_PARENTHESIS, Literal: "("},
+		{Type: token.IDENTIFIER, Literal: "i"},
+		{Type: token.PERCENT, Literal: "%"},
+		{Type: token.INT, Literal: "2"},
+		{Type: token.EQUALS, Literal: "==="},
+		{Type: token.INT, Literal: "0"},
+		{Type: token.RIGHT_PARENTHESIS, Literal: ")"},
+		{Type: token.LEFT_BRACE, Literal: "{"},
+		{Type: token.CONTINUE, Literal: "continue"},
+		{Type: token.SEMICOLON, Literal: ";"},
+		{Type: token.RIGHT_BRACE, Literal: "}"},
 		{Type: token.RIGHT_BRACE, Literal: "}"},
 
 		{Type: token.EOF, Literal: ""},

@@ -35,10 +35,6 @@ func (l *Lexer) NextToken() token.Token {
 	l.skipWhitespace()
 
 	switch l.currentChar {
-	case '+':
-		currentToken = token.NewTokenFromChar(token.PLUS, l.currentChar, l.currentLineNumber)
-	case '-':
-		currentToken = token.NewTokenFromChar(token.MINUS, l.currentChar, l.currentLineNumber)
 	case '*':
 		currentToken = token.NewTokenFromChar(token.ASTERISK, l.currentChar, l.currentLineNumber)
 	case '%':
@@ -57,6 +53,33 @@ func (l *Lexer) NextToken() token.Token {
 		currentToken = token.NewTokenFromChar(token.RIGHT_BRACE, l.currentChar, l.currentLineNumber)
 	case '"', '\'', '`':
 		currentToken = token.NewTokenFromString(token.STRING, l.readString(), l.currentLineNumber)
+	case '+':
+		if utilities.PeekRune(l.input) == '+' {
+			startingChar := l.currentChar
+			l.readChar()
+
+			currentToken = token.NewTokenFromString(
+				token.INCREMENT,
+				fmt.Sprintf("%c%c", startingChar, l.currentChar),
+				l.currentLineNumber,
+			)
+		} else {
+
+			currentToken = token.NewTokenFromChar(token.PLUS, l.currentChar, l.currentLineNumber)
+		}
+	case '-':
+		if utilities.PeekRune(l.input) == '-' {
+			startingChar := l.currentChar
+			l.readChar()
+
+			currentToken = token.NewTokenFromString(
+				token.DECREMENT,
+				fmt.Sprintf("%c%c", startingChar, l.currentChar),
+				l.currentLineNumber,
+			)
+		} else {
+			currentToken = token.NewTokenFromChar(token.MINUS, l.currentChar, l.currentLineNumber)
+		}
 	case '/':
 		nextChar := utilities.PeekRune(l.input)
 		if nextChar == '/' || nextChar == '*' {
@@ -67,13 +90,13 @@ func (l *Lexer) NextToken() token.Token {
 	case '=':
 		nextChars, err := utilities.PeekTwoRunes(l.input)
 		if err == nil && nextChars == "==" {
-			startingCharacter := l.currentChar
+			startingChar := l.currentChar
 			l.readChar()
 			l.readChar()
 
 			currentToken = token.NewTokenFromString(
 				token.EQUALS,
-				fmt.Sprintf("%c%s", startingCharacter, nextChars),
+				fmt.Sprintf("%c%s", startingChar, nextChars),
 				l.currentLineNumber,
 			)
 		} else {
@@ -82,13 +105,13 @@ func (l *Lexer) NextToken() token.Token {
 	case '!':
 		nextChars, err := utilities.PeekTwoRunes(l.input)
 		if err == nil && nextChars == "==" {
-			startingCharacter := l.currentChar
+			startingChar := l.currentChar
 			l.readChar()
 			l.readChar()
 
 			currentToken = token.NewTokenFromString(
 				token.NOT_EQUALS,
-				fmt.Sprintf("%c%s", startingCharacter, nextChars),
+				fmt.Sprintf("%c%s", startingChar, nextChars),
 				l.currentLineNumber,
 			)
 		} else {
@@ -96,12 +119,12 @@ func (l *Lexer) NextToken() token.Token {
 		}
 	case '<':
 		if utilities.PeekRune(l.input) == '=' {
-			startingCharacter := l.currentChar
+			startingChar := l.currentChar
 			l.readChar()
 
 			currentToken = token.NewTokenFromString(
 				token.LESS_THAN_OR_EQUAL,
-				fmt.Sprintf("%c%c", startingCharacter, l.currentChar),
+				fmt.Sprintf("%c%c", startingChar, l.currentChar),
 				l.currentLineNumber,
 			)
 		} else {
@@ -109,12 +132,12 @@ func (l *Lexer) NextToken() token.Token {
 		}
 	case '>':
 		if utilities.PeekRune(l.input) == '=' {
-			startingCharacter := l.currentChar
+			startingChar := l.currentChar
 			l.readChar()
 
 			currentToken = token.NewTokenFromString(
 				token.GREATER_THAN_OR_EQUAL,
-				fmt.Sprintf("%c%c", startingCharacter, l.currentChar),
+				fmt.Sprintf("%c%c", startingChar, l.currentChar),
 				l.currentLineNumber,
 			)
 		} else {

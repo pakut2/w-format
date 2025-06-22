@@ -15,6 +15,8 @@ const (
 	LESS_THAN_OR_EQUAL    = token.LESS_THAN_OR_EQUAL
 	GREATER_THAN          = token.GREATER_THAN
 	GREATER_THAN_OR_EQUAL = token.GREATER_THAN_OR_EQUAL
+	INCREMENT             = token.INCREMENT
+	DECREMENT             = token.DECREMENT
 )
 
 type Node interface{}
@@ -49,6 +51,44 @@ type AssignmentStatement struct {
 
 func (a *AssignmentStatement) statementNode() {}
 
+type IfStatement struct {
+	Token       token.Token
+	Condition   Expression
+	Consequence *BlockStatement
+	Alternative *BlockStatement
+}
+
+func (i *IfStatement) statementNode() {}
+
+type BlockStatement struct {
+	Token      token.Token
+	Statements []Statement
+}
+
+func (b *BlockStatement) statementNode() {}
+
+type ForStatement struct {
+	Token       token.Token
+	Declaration *LetStatement
+	Boundary    Expression
+	Increment   Expression
+	Body        *BlockStatement
+}
+
+func (f *ForStatement) statementNode() {}
+
+type BreakStatement struct {
+	Token token.Token
+}
+
+func (b *BreakStatement) statementNode() {}
+
+type ContinueStatement struct {
+	Token token.Token
+}
+
+func (c *ContinueStatement) statementNode() {}
+
 type ExpressionStatement struct {
 	Expression Expression
 }
@@ -72,6 +112,14 @@ type InfixExpression struct {
 
 func (i *InfixExpression) expressionNode() {}
 
+type SuffixExpression struct {
+	Token    token.Token
+	Left     Expression
+	Operator string
+}
+
+func (s *SuffixExpression) expressionNode() {}
+
 type Identifier struct {
 	Token token.Token
 	Value string
@@ -85,22 +133,6 @@ type CallExpression struct {
 }
 
 func (ce *CallExpression) expressionNode() {}
-
-type IfExpression struct {
-	Token       token.Token
-	Condition   Expression
-	Consequence *BlockStatement
-	Alternative *BlockStatement
-}
-
-func (i *IfExpression) expressionNode() {}
-
-type BlockStatement struct {
-	Token      token.Token
-	Statements []Statement
-}
-
-func (b *BlockStatement) statementNode() {}
 
 type StringLiteral struct {
 	Token token.Token
