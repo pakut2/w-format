@@ -1,7 +1,6 @@
 const possibleMatches = new Map<number, string>([
     [3, "fizz"],
     [5, "buzz"],
-    [7, "wat"],
 ]);
 
 const fizzbuzz = (): void => {
