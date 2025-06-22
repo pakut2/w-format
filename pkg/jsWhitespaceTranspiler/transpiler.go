@@ -380,7 +380,7 @@ func (t *Transpiler) transpileNegationPrefixOperatorExpression(right object.Obje
 	comparatorHeapAddress := t.getEmptyHeapAddress()
 	t.storeValueInHeapInstruction(comparatorHeapAddress, 0)
 
-	t.integerComparisonInstruction(ast.EQUALS, rightInteger.HeapAddress, comparatorHeapAddress)
+	t.comparisonInstruction(ast.EQUALS, rightInteger.HeapAddress, comparatorHeapAddress)
 
 	resultHeapAddress := t.getEmptyHeapAddress()
 	t.storeTopStackValueInHeapInstruction(resultHeapAddress)
@@ -433,11 +433,11 @@ func (t *Transpiler) transpileIntegerInfixExpression(expression *ast.InfixExpres
 	case ast.MODULO:
 		t.moduloInstruction(leftHeapAddress, rightHeapAddress)
 	case ast.EQUALS, ast.NOT_EQUALS, ast.LESS_THAN, ast.LESS_THAN_OR_EQUAL, ast.GREATER_THAN, ast.GREATER_THAN_OR_EQUAL:
-		t.integerComparisonInstruction(expression.Operator, leftHeapAddress, rightHeapAddress)
+		t.comparisonInstruction(expression.Operator, leftHeapAddress, rightHeapAddress)
 	case ast.AND:
-		t.integerAndInstruction(leftHeapAddress, rightHeapAddress)
+		t.andInstruction(leftHeapAddress, rightHeapAddress)
 	case ast.OR:
-		t.integerOrInstruction(leftHeapAddress, rightHeapAddress)
+		t.orInstruction(leftHeapAddress, rightHeapAddress)
 	default:
 		panic(
 			fmt.Sprintf("[:%d] unknown operator %s %s %s",
@@ -596,7 +596,7 @@ func (t *Transpiler) moduloInstruction(heapAddress1, heapAddress2 int64) {
 	t.addInstruction(whitespace.Mod())
 }
 
-func (t *Transpiler) integerComparisonInstruction(operator string, leftHeapAddress, rightHeapAddress int64) {
+func (t *Transpiler) comparisonInstruction(operator string, leftHeapAddress, rightHeapAddress int64) {
 	matchLabel := t.getEmptyLabelId()
 	endComparisonLabel := t.getEmptyLabelId()
 
@@ -635,7 +635,7 @@ func (t *Transpiler) integerComparisonInstruction(operator string, leftHeapAddre
 	t.addInstruction(whitespace.Label(endComparisonLabel))
 }
 
-func (t *Transpiler) integerAndInstruction(leftHeapAddress, rightHeapAddress int64) {
+func (t *Transpiler) andInstruction(leftHeapAddress, rightHeapAddress int64) {
 	firstMatchLabel := t.getEmptyLabelId()
 	secondMatchLabel := t.getEmptyLabelId()
 	endComparisonLabel := t.getEmptyLabelId()
@@ -643,7 +643,7 @@ func (t *Transpiler) integerAndInstruction(leftHeapAddress, rightHeapAddress int
 	comparatorHeapAddress := t.getEmptyHeapAddress()
 	t.storeValueInHeapInstruction(comparatorHeapAddress, 0)
 
-	t.integerComparisonInstruction(ast.EQUALS, leftHeapAddress, comparatorHeapAddress)
+	t.comparisonInstruction(ast.EQUALS, leftHeapAddress, comparatorHeapAddress)
 	t.addInstruction(whitespace.JumpToLabelIfZero(firstMatchLabel))
 
 	t.pushNumberLiteralToStackInstruction(whitespace.FALSE)
@@ -654,7 +654,7 @@ func (t *Transpiler) integerAndInstruction(leftHeapAddress, rightHeapAddress int
 	firstComparisonResultHeapAddress := t.getEmptyHeapAddress()
 	t.storeTopStackValueInHeapInstruction(firstComparisonResultHeapAddress)
 
-	t.integerComparisonInstruction(ast.EQUALS, rightHeapAddress, comparatorHeapAddress)
+	t.comparisonInstruction(ast.EQUALS, rightHeapAddress, comparatorHeapAddress)
 	t.addInstruction(whitespace.JumpToLabelIfZero(secondMatchLabel))
 
 	t.pushNumberLiteralToStackInstruction(whitespace.FALSE)
@@ -666,20 +666,20 @@ func (t *Transpiler) integerAndInstruction(leftHeapAddress, rightHeapAddress int
 	t.addInstruction(whitespace.Label(endComparisonLabel))
 }
 
-func (t *Transpiler) integerOrInstruction(leftHeapAddress, rightHeapAddress int64) {
+func (t *Transpiler) orInstruction(leftHeapAddress, rightHeapAddress int64) {
 	matchLabel := t.getEmptyLabelId()
 	endComparisonLabel := t.getEmptyLabelId()
 
 	comparatorHeapAddress := t.getEmptyHeapAddress()
 	t.storeValueInHeapInstruction(comparatorHeapAddress, 0)
 
-	t.integerComparisonInstruction(ast.EQUALS, leftHeapAddress, comparatorHeapAddress)
+	t.comparisonInstruction(ast.EQUALS, leftHeapAddress, comparatorHeapAddress)
 	t.addInstruction(whitespace.JumpToLabelIfZero(matchLabel))
 
 	firstComparisonResultHeapAddress := t.getEmptyHeapAddress()
 	t.storeTopStackValueInHeapInstruction(firstComparisonResultHeapAddress)
 
-	t.integerComparisonInstruction(ast.EQUALS, rightHeapAddress, comparatorHeapAddress)
+	t.comparisonInstruction(ast.EQUALS, rightHeapAddress, comparatorHeapAddress)
 	t.addInstruction(whitespace.JumpToLabelIfZero(matchLabel))
 
 	t.pushNumberLiteralToStackInstruction(whitespace.FALSE)
