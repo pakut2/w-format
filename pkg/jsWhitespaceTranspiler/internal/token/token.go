@@ -31,6 +31,8 @@ const (
 	GREATER_THAN_OR_EQUAL = ">="
 	INCREMENT             = "++"
 	DECREMENT             = "--"
+	AND                   = "&&"
+	OR                    = "||"
 
 	COMMA             = ","
 	SEMICOLON         = ";"

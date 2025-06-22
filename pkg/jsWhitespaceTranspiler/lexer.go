@@ -53,6 +53,32 @@ func (l *Lexer) NextToken() token.Token {
 		currentToken = token.NewTokenFromChar(token.RIGHT_BRACE, l.currentChar, l.currentLineNumber)
 	case '"', '\'', '`':
 		currentToken = token.NewTokenFromString(token.STRING, l.readString(), l.currentLineNumber)
+	case '&':
+		if utilities.PeekRune(l.input) == '&' {
+			startingChar := l.currentChar
+			l.readChar()
+
+			currentToken = token.NewTokenFromString(
+				token.AND,
+				fmt.Sprintf("%c%c", startingChar, l.currentChar),
+				l.currentLineNumber,
+			)
+		} else {
+			currentToken = token.NewTokenFromChar(token.ILLEGAL, l.currentChar, l.currentLineNumber)
+		}
+	case '|':
+		if utilities.PeekRune(l.input) == '|' {
+			startingChar := l.currentChar
+			l.readChar()
+
+			currentToken = token.NewTokenFromString(
+				token.OR,
+				fmt.Sprintf("%c%c", startingChar, l.currentChar),
+				l.currentLineNumber,
+			)
+		} else {
+			currentToken = token.NewTokenFromChar(token.ILLEGAL, l.currentChar, l.currentLineNumber)
+		}
 	case '+':
 		if utilities.PeekRune(l.input) == '+' {
 			startingChar := l.currentChar
@@ -64,7 +90,6 @@ func (l *Lexer) NextToken() token.Token {
 				l.currentLineNumber,
 			)
 		} else {
-
 			currentToken = token.NewTokenFromChar(token.PLUS, l.currentChar, l.currentLineNumber)
 		}
 	case '-':

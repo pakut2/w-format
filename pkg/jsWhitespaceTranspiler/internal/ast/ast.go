@@ -17,6 +17,8 @@ const (
 	GREATER_THAN_OR_EQUAL = token.GREATER_THAN_OR_EQUAL
 	INCREMENT             = token.INCREMENT
 	DECREMENT             = token.DECREMENT
+	AND                   = token.AND
+	OR                    = token.OR
 )
 
 type Node interface{}

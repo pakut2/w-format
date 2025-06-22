@@ -26,7 +26,7 @@ if (false) {
 }
 
 for (let i = 0; i < 10; i++) { 
-	if (i % 2 === 0) {
+	if (i % 2 === 0 || i === 8) {
 		continue;
 	}
 }
@@ -125,6 +125,10 @@ for (let i = 0; i < 10; i++) {
 		{Type: token.INT, Literal: "2"},
 		{Type: token.EQUALS, Literal: "==="},
 		{Type: token.INT, Literal: "0"},
+		{Type: token.OR, Literal: "||"},
+		{Type: token.IDENTIFIER, Literal: "i"},
+		{Type: token.EQUALS, Literal: "==="},
+		{Type: token.INT, Literal: "8"},
 		{Type: token.RIGHT_PARENTHESIS, Literal: ")"},
 		{Type: token.LEFT_BRACE, Literal: "{"},
 		{Type: token.CONTINUE, Literal: "continue"},

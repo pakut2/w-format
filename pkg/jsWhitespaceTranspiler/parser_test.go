@@ -29,7 +29,7 @@ if (false) {
 }
 
 for (let i = 0; i < 10; i++) { 
-	if (i % 2 === 0) {
+	if (i % 2 === 0 || i === 8) {
 		continue;
 	}
 }
@@ -160,8 +160,11 @@ for (let i = 0; i < 10; i++) {
 				},
 			},
 			&ast.IfStatement{
-				Token:     token.Token{Type: token.IF, Literal: "if", LineNumber: 12},
-				Condition: &ast.IntegerLiteral{Token: token.Token{Type: token.FALSE, Literal: "false", LineNumber: 12}, Value: 0},
+				Token: token.Token{Type: token.IF, Literal: "if", LineNumber: 12},
+				Condition: &ast.IntegerLiteral{
+					Token: token.Token{Type: token.FALSE, Literal: "false", LineNumber: 12},
+					Value: 0,
+				},
 				Consequence: &ast.BlockStatement{
 					Token: token.Token{Type: token.LEFT_BRACE, Literal: "{", LineNumber: 12},
 					Statements: []ast.Statement{
@@ -234,23 +237,39 @@ for (let i = 0; i < 10; i++) {
 						&ast.IfStatement{
 							Token: token.Token{Type: token.IF, Literal: "if", LineNumber: 19},
 							Condition: &ast.InfixExpression{
-								Token: token.Token{Type: token.EQUALS, Literal: "===", LineNumber: 19},
+								Token: token.Token{Type: token.OR, Literal: "||", LineNumber: 19},
 								Left: &ast.InfixExpression{
-									Token: token.Token{Type: token.PERCENT, Literal: "%", LineNumber: 19},
+									Token: token.Token{Type: token.EQUALS, Literal: "===", LineNumber: 19},
+									Left: &ast.InfixExpression{
+										Token: token.Token{Type: token.PERCENT, Literal: "%", LineNumber: 19},
+										Left: &ast.Identifier{
+											Token: token.Token{Type: token.IDENTIFIER, Literal: "i", LineNumber: 19},
+											Value: "i",
+										},
+										Operator: "%",
+										Right: &ast.IntegerLiteral{
+											Token: token.Token{Type: token.INT, Literal: "2", LineNumber: 19},
+											Value: 2,
+										},
+									},
+									Operator: "===",
+									Right: &ast.IntegerLiteral{
+										Token: token.Token{Type: token.INT, Literal: "0", LineNumber: 19},
+										Value: 0,
+									},
+								},
+								Operator: "||",
+								Right: &ast.InfixExpression{
+									Token: token.Token{Type: token.EQUALS, Literal: "===", LineNumber: 19},
 									Left: &ast.Identifier{
 										Token: token.Token{Type: token.IDENTIFIER, Literal: "i", LineNumber: 19},
 										Value: "i",
 									},
-									Operator: "%",
+									Operator: "===",
 									Right: &ast.IntegerLiteral{
-										Token: token.Token{Type: token.INT, Literal: "2", LineNumber: 19},
-										Value: 2,
+										Token: token.Token{Type: token.INT, Literal: "8", LineNumber: 19},
+										Value: 8,
 									},
-								},
-								Operator: "===",
-								Right: &ast.IntegerLiteral{
-									Token: token.Token{Type: token.INT, Literal: "0", LineNumber: 19},
-									Value: 0,
 								},
 							},
 							Consequence: &ast.BlockStatement{
@@ -261,6 +280,7 @@ for (let i = 0; i < 10; i++) {
 									},
 								},
 							},
+							Alternative: nil,
 						},
 					},
 				},

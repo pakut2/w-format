@@ -97,27 +97,9 @@ func (t *Transpiler) TranspileProgram(program *ast.Program) object.Object {
 func (t *Transpiler) transpile(node ast.Node, scopeContext *object.ScopeContext) object.Object {
 	switch node := node.(type) {
 	case *ast.LetStatement:
-		value := t.transpile(node.Value, scopeContext)
-
-		_, ok := t.environment.Get(node.Name.Value)
-		if ok {
-			panic(fmt.Sprintf("[:%d] redeclaration of %s", node.Token.LineNumber, node.Name.Value))
-		}
-
-		t.environment.Set(node.Name.Value, value)
-
-		return &object.Void{}
+		return t.transpileLetStatement(node)
 	case *ast.AssignmentStatement:
-		value := t.transpile(node.Value, scopeContext)
-
-		_, ok := t.environment.Get(node.Name.Value)
-		if !ok {
-			panic(fmt.Sprintf("[:%d] %s is not defined", node.Token.LineNumber, node.Name.Value))
-		}
-
-		t.environment.Set(node.Name.Value, value)
-
-		return &object.Void{}
+		return t.transpileAssignmentStatement(node)
 	case *ast.IfStatement:
 		return t.transpileIfStatement(node, scopeContext)
 	case *ast.BlockStatement:
@@ -154,6 +136,44 @@ func (t *Transpiler) transpile(node ast.Node, scopeContext *object.ScopeContext)
 		left := t.transpile(node.Left, scopeContext)
 
 		return t.transpileSuffixExpression(node, left)
+	}
+
+	return &object.Void{}
+}
+
+func (t *Transpiler) transpileLetStatement(statement *ast.LetStatement) object.Object {
+	_, ok := t.environment.Get(statement.Name.Value)
+	if ok {
+		panic(fmt.Sprintf("[:%d] redeclaration of %s", statement.Token.LineNumber, statement.Name.Value))
+	}
+
+	value := t.transpile(statement.Value, nil)
+	t.environment.Set(statement.Name.Value, value)
+
+	return &object.Void{}
+}
+
+func (t *Transpiler) transpileAssignmentStatement(statement *ast.AssignmentStatement) object.Object {
+	previousValue, ok := t.environment.Get(statement.Name.Value)
+	if !ok {
+		panic(fmt.Sprintf("[:%d] %s is not defined", statement.Token.LineNumber, statement.Name.Value))
+	}
+
+	assignedValue := t.transpile(statement.Value, nil)
+
+	if previousValue.Type() != assignedValue.Type() {
+		panic(
+			fmt.Sprintf("[:%d] assignment type mismatch %s = %s",
+				statement.Token.LineNumber,
+				previousValue.Type(),
+				assignedValue.Type(),
+			),
+		)
+	}
+
+	if previousValue.Type() == object.INT_OBJ {
+		t.retrieveFromHeapInstruction(assignedValue.(*object.Integer).HeapAddress)
+		t.storeTopStackValueInHeapInstruction(previousValue.(*object.Integer).HeapAddress)
 	}
 
 	return &object.Void{}
@@ -360,7 +380,7 @@ func (t *Transpiler) transpileNegationPrefixOperatorExpression(right object.Obje
 	comparatorHeapAddress := t.getEmptyHeapAddress()
 	t.storeValueInHeapInstruction(comparatorHeapAddress, 0)
 
-	t.integerBooleanInstruction(ast.EQUALS, rightInteger.HeapAddress, comparatorHeapAddress)
+	t.integerComparisonInstruction(ast.EQUALS, rightInteger.HeapAddress, comparatorHeapAddress)
 
 	resultHeapAddress := t.getEmptyHeapAddress()
 	t.storeTopStackValueInHeapInstruction(resultHeapAddress)
@@ -371,12 +391,11 @@ func (t *Transpiler) transpileNegationPrefixOperatorExpression(right object.Obje
 }
 
 func (t *Transpiler) transpileInfixExpression(expression *ast.InfixExpression, left, right object.Object) object.Object {
-	// TODO check in other places
 	switch {
 	case left.Type() == object.INT_OBJ && right.Type() == object.INT_OBJ:
 		return t.transpileIntegerInfixExpression(expression, left, right)
 	case left.Type() == object.STRING_OBJ && right.Type() == object.STRING_OBJ:
-		panic("unsupported")
+		return t.transpileStringInfixExpression(expression, left, right)
 	case left.Type() != right.Type():
 		panic(
 			fmt.Sprintf("[:%d] type mismatch %s %s %s",
@@ -388,8 +407,7 @@ func (t *Transpiler) transpileInfixExpression(expression *ast.InfixExpression, l
 		)
 	default:
 		panic(
-			fmt.Sprintf(
-				"[:%d] unknown operator %s %s %s",
+			fmt.Sprintf("[:%d] unknown operator %s %s %s",
 				expression.Token.LineNumber,
 				left.Type(),
 				expression.Operator,
@@ -415,7 +433,11 @@ func (t *Transpiler) transpileIntegerInfixExpression(expression *ast.InfixExpres
 	case ast.MODULO:
 		t.moduloInstruction(leftHeapAddress, rightHeapAddress)
 	case ast.EQUALS, ast.NOT_EQUALS, ast.LESS_THAN, ast.LESS_THAN_OR_EQUAL, ast.GREATER_THAN, ast.GREATER_THAN_OR_EQUAL:
-		t.integerBooleanInstruction(expression.Operator, leftHeapAddress, rightHeapAddress)
+		t.integerComparisonInstruction(expression.Operator, leftHeapAddress, rightHeapAddress)
+	case ast.AND:
+		t.integerAndInstruction(leftHeapAddress, rightHeapAddress)
+	case ast.OR:
+		t.integerOrInstruction(leftHeapAddress, rightHeapAddress)
 	default:
 		panic(
 			fmt.Sprintf("[:%d] unknown operator %s %s %s",
@@ -433,9 +455,33 @@ func (t *Transpiler) transpileIntegerInfixExpression(expression *ast.InfixExpres
 	return &object.Integer{HeapAddress: resultHeapAddress}
 }
 
+func (t *Transpiler) transpileStringInfixExpression(expression *ast.InfixExpression, left, right object.Object) object.Object {
+	leftChars := left.(*object.String).Chars
+	rightChars := right.(*object.String).Chars
+
+	switch expression.Operator {
+	case ast.ADDITION:
+		return &object.String{Chars: append(leftChars, rightChars...)} // This is naive and won't work for runtime assignment statements without dynamic memory allocation
+	default:
+		panic(
+			fmt.Sprintf("[:%d] unknown operator %s %s %s",
+				expression.Token.LineNumber,
+				left.Type(),
+				expression.Operator,
+				right.Type(),
+			),
+		)
+	}
+}
+
 func (t *Transpiler) transpileSuffixExpression(expression *ast.SuffixExpression, operand object.Object) object.Object {
 	if operand.Type() != object.INT_OBJ {
-		panic(fmt.Sprintf("[:%d] unsupported %s target %q", expression.Token.LineNumber, expression.Operator, operand.Type()))
+		panic(
+			fmt.Sprintf("[:%d] unsupported %s target %q",
+				expression.Token.LineNumber,
+				expression.Operator,
+				operand.Type()),
+		)
 	}
 
 	switch expression.Operator {
@@ -445,8 +491,7 @@ func (t *Transpiler) transpileSuffixExpression(expression *ast.SuffixExpression,
 		t.literalSubtractionInstruction(operand.(*object.Integer).HeapAddress, 1)
 	default:
 		panic(
-			fmt.Sprintf(
-				"[:%d] unknown operator %s %s",
+			fmt.Sprintf("[:%d] unknown operator %s %s",
 				expression.Token.LineNumber,
 				operand.Type(),
 				expression.Operator,
@@ -551,18 +596,18 @@ func (t *Transpiler) moduloInstruction(heapAddress1, heapAddress2 int64) {
 	t.addInstruction(whitespace.Mod())
 }
 
-func (t *Transpiler) integerBooleanInstruction(operator string, leftHeapAddress, rightHeapAddress int64) {
-	consequenceLabel := t.getEmptyLabelId()
-	endIfLabel := t.getEmptyLabelId()
+func (t *Transpiler) integerComparisonInstruction(operator string, leftHeapAddress, rightHeapAddress int64) {
+	matchLabel := t.getEmptyLabelId()
+	endComparisonLabel := t.getEmptyLabelId()
 
 	if operator == ast.EQUALS || operator == ast.NOT_EQUALS || operator == ast.GREATER_THAN || operator == ast.LESS_THAN_OR_EQUAL {
 		t.subtractionInstruction(leftHeapAddress, rightHeapAddress)
-		t.addInstruction(whitespace.JumpToLabelIfZero(consequenceLabel))
+		t.addInstruction(whitespace.JumpToLabelIfZero(matchLabel))
 	}
 
 	if operator == ast.LESS_THAN || operator == ast.GREATER_THAN || operator == ast.LESS_THAN_OR_EQUAL || operator == ast.GREATER_THAN_OR_EQUAL {
 		t.subtractionInstruction(leftHeapAddress, rightHeapAddress)
-		t.addInstruction(whitespace.JumpToLabelIfNegative(consequenceLabel))
+		t.addInstruction(whitespace.JumpToLabelIfNegative(matchLabel))
 	}
 
 	switch operator {
@@ -574,9 +619,9 @@ func (t *Transpiler) integerBooleanInstruction(operator string, leftHeapAddress,
 		panic(fmt.Sprintf("unknown operator %q", operator))
 	}
 
-	t.addInstruction(whitespace.JumpToLabel(endIfLabel))
+	t.addInstruction(whitespace.JumpToLabel(endComparisonLabel))
 
-	t.addInstruction(whitespace.Label(consequenceLabel))
+	t.addInstruction(whitespace.Label(matchLabel))
 
 	switch operator {
 	case ast.EQUALS, ast.LESS_THAN, ast.LESS_THAN_OR_EQUAL:
@@ -587,5 +632,61 @@ func (t *Transpiler) integerBooleanInstruction(operator string, leftHeapAddress,
 		panic(fmt.Sprintf("unknown operator %q", operator))
 	}
 
-	t.addInstruction(whitespace.Label(endIfLabel))
+	t.addInstruction(whitespace.Label(endComparisonLabel))
+}
+
+func (t *Transpiler) integerAndInstruction(leftHeapAddress, rightHeapAddress int64) {
+	firstMatchLabel := t.getEmptyLabelId()
+	secondMatchLabel := t.getEmptyLabelId()
+	endComparisonLabel := t.getEmptyLabelId()
+
+	comparatorHeapAddress := t.getEmptyHeapAddress()
+	t.storeValueInHeapInstruction(comparatorHeapAddress, 0)
+
+	t.integerComparisonInstruction(ast.EQUALS, leftHeapAddress, comparatorHeapAddress)
+	t.addInstruction(whitespace.JumpToLabelIfZero(firstMatchLabel))
+
+	t.pushNumberLiteralToStackInstruction(whitespace.FALSE)
+	t.addInstruction(whitespace.JumpToLabel(endComparisonLabel))
+
+	t.addInstruction(whitespace.Label(firstMatchLabel))
+
+	firstComparisonResultHeapAddress := t.getEmptyHeapAddress()
+	t.storeTopStackValueInHeapInstruction(firstComparisonResultHeapAddress)
+
+	t.integerComparisonInstruction(ast.EQUALS, rightHeapAddress, comparatorHeapAddress)
+	t.addInstruction(whitespace.JumpToLabelIfZero(secondMatchLabel))
+
+	t.pushNumberLiteralToStackInstruction(whitespace.FALSE)
+	t.addInstruction(whitespace.JumpToLabel(endComparisonLabel))
+
+	t.addInstruction(whitespace.Label(secondMatchLabel))
+	t.pushNumberLiteralToStackInstruction(whitespace.TRUE)
+
+	t.addInstruction(whitespace.Label(endComparisonLabel))
+}
+
+func (t *Transpiler) integerOrInstruction(leftHeapAddress, rightHeapAddress int64) {
+	matchLabel := t.getEmptyLabelId()
+	endComparisonLabel := t.getEmptyLabelId()
+
+	comparatorHeapAddress := t.getEmptyHeapAddress()
+	t.storeValueInHeapInstruction(comparatorHeapAddress, 0)
+
+	t.integerComparisonInstruction(ast.EQUALS, leftHeapAddress, comparatorHeapAddress)
+	t.addInstruction(whitespace.JumpToLabelIfZero(matchLabel))
+
+	firstComparisonResultHeapAddress := t.getEmptyHeapAddress()
+	t.storeTopStackValueInHeapInstruction(firstComparisonResultHeapAddress)
+
+	t.integerComparisonInstruction(ast.EQUALS, rightHeapAddress, comparatorHeapAddress)
+	t.addInstruction(whitespace.JumpToLabelIfZero(matchLabel))
+
+	t.pushNumberLiteralToStackInstruction(whitespace.FALSE)
+	t.addInstruction(whitespace.JumpToLabel(endComparisonLabel))
+
+	t.addInstruction(whitespace.Label(matchLabel))
+	t.pushNumberLiteralToStackInstruction(whitespace.TRUE)
+
+	t.addInstruction(whitespace.Label(endComparisonLabel))
 }
