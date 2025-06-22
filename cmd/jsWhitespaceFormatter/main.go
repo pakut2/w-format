@@ -13,9 +13,9 @@ import (
 )
 
 type CommandLineArgs struct {
-	sourceFilePath       string
-	formatTargetFilePath utilities.Optional[string]
-	formatOutputFilePath utilities.Optional[string]
+	sourceFilePath string
+	formatFilePath utilities.Optional[string]
+	outputFilePath utilities.Optional[string]
 }
 
 func main() {
@@ -32,10 +32,10 @@ func main() {
 	whitespace := jsWhitespaceTranspiler.NewTranspiler().TranspileProgram(parsedSource)
 
 	var formatTarget io.Reader
-	if args.formatTargetFilePath.Valid {
-		formatTargetFile, err := os.Open(args.formatTargetFilePath.Value)
+	if args.formatFilePath.Valid {
+		formatTargetFile, err := os.Open(args.formatFilePath.Value)
 		if err != nil {
-			panic(fmt.Sprintf("cannot open file: %q, error: %v", args.formatTargetFilePath.Value, err))
+			panic(fmt.Sprintf("cannot open file: %q, error: %v", args.formatFilePath.Value, err))
 		}
 		defer formatTargetFile.Close()
 
@@ -45,10 +45,10 @@ func main() {
 	}
 
 	var formatOutput io.Writer
-	if args.formatOutputFilePath.Valid {
-		formatOutputFile, err := os.Create(args.formatOutputFilePath.Value)
+	if args.outputFilePath.Valid {
+		formatOutputFile, err := os.Create(args.outputFilePath.Value)
 		if err != nil {
-			panic(fmt.Sprintf("cannot open file: %q, error: %v", args.formatOutputFilePath.Value, err))
+			panic(fmt.Sprintf("cannot open file: %q, error: %v", args.outputFilePath.Value, err))
 		}
 		defer formatOutputFile.Close()
 
@@ -59,15 +59,15 @@ func main() {
 
 	formatter.NewFormatter(formatTarget, whitespace.Instructions(), formatOutput).Format()
 
-	if args.formatOutputFilePath.Valid {
-		fmt.Printf("formatted file saved to %q\n", args.formatOutputFilePath.Value)
+	if args.outputFilePath.Valid {
+		fmt.Printf("output saved to %q\n", args.outputFilePath.Value)
 	}
 }
 
 func parseCommandLineArgs() CommandLineArgs {
 	sourceFilePath := flag.String("source-file", "", "Whitespace transpilation source file path")
-	formatTargetFilePath := flag.String("format-target-file", "", "(Optional) Format target file path. If not provided, outputs generated Whitespace only")
-	formatOutputFilePath := flag.String("format-output-file", "", "(Optional) Formatted file output path. If not provided, outputs to stdout")
+	formatFilePath := flag.String("format-file", "", "(Optional) Path to file to be formatted with the generated Whitespace. If not provided, outputs Whitespace only")
+	outputFilePath := flag.String("output-file", "", "(Optional) Output file path. If not provided, outputs to stdout")
 	flag.Parse()
 
 	if *sourceFilePath == "" {
@@ -75,24 +75,24 @@ func parseCommandLineArgs() CommandLineArgs {
 	}
 
 	parsedFormatTargetFilePath := utilities.Optional[string]{Valid: false, Value: ""}
-	if *formatTargetFilePath != "" {
+	if *formatFilePath != "" {
 		parsedFormatTargetFilePath = utilities.Optional[string]{
 			Valid: true,
-			Value: *formatTargetFilePath,
+			Value: *formatFilePath,
 		}
 	}
 
 	parsedFormatOutputFilePath := utilities.Optional[string]{Valid: false, Value: ""}
-	if *formatOutputFilePath != "" {
+	if *outputFilePath != "" {
 		parsedFormatOutputFilePath = utilities.Optional[string]{
 			Valid: true,
-			Value: *formatOutputFilePath,
+			Value: *outputFilePath,
 		}
 	}
 
 	return CommandLineArgs{
-		sourceFilePath:       *sourceFilePath,
-		formatTargetFilePath: parsedFormatTargetFilePath,
-		formatOutputFilePath: parsedFormatOutputFilePath,
+		sourceFilePath: *sourceFilePath,
+		formatFilePath: parsedFormatTargetFilePath,
+		outputFilePath: parsedFormatOutputFilePath,
 	}
 }
