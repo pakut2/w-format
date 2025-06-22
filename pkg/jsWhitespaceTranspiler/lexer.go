@@ -211,9 +211,11 @@ func (l *Lexer) readString() string {
 			break
 		}
 
-		if l.currentChar != '\\' {
-			stringLiteral = fmt.Sprintf("%s%c", stringLiteral, l.currentChar)
+		if l.currentChar == '\\' && utilities.PeekRune(l.input) == startingQuote {
+			continue
 		}
+
+		stringLiteral = fmt.Sprintf("%s%c", stringLiteral, l.currentChar)
 	}
 
 	return stringLiteral
