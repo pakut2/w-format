@@ -15,7 +15,7 @@ Transpile Javascript to [Whitespace](https://esolangs.org/wiki/Whitespace). Form
 make run-example
 ```
 
-After running, a new file will be generated under `./examples/output.ts`. The result takes [source Javascript file](./examples/source.js) and transpiles it to Whitespace. Afterwards, the [target file](./examples/format.ts) is formatted to include the generated Whitespace instructions, creating the final output file.
+After running, a new file will be generated under `./examples/output.ts`. The result takes the [source Javascript file](./examples/source.js) and transpiles it to Whitespace. Afterwards, the [target file](./examples/format.ts) is formatted to include the generated Whitespace instructions, creating the final output file.
 
 This results in a single source file, running the same program while interpreted as different programming languages.
 
