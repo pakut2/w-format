@@ -22,7 +22,7 @@ This results in a single source file, running the same program while interpreted
 Typescript result can be executed with:
 
 ```shell
-node --experimental-strip-types examples/formatOutput.ts
+node --experimental-strip-types examples/output.ts
 ```
 
 Whitespace can be executed using an online [Whitespace interpreter](https://naokikp.github.io/wsi/whitespace.html).
